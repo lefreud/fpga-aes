@@ -2,9 +2,9 @@
 -- Company: 
 -- Engineer: 
 -- 
--- Create Date: 11/11/2021 10:26:20 AM
+-- Create Date: 11/11/2021 11:35:25 AM
 -- Design Name: 
--- Module Name: MixColumns - Behavioral
+-- Module Name: MixColumnsByte - Behavioral
 -- Project Name: 
 -- Target Devices: 
 -- Tool Versions: 
@@ -33,27 +33,16 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 -- https://en.wikipedia.org/wiki/Rijndael_MixColumns
 
-entity MixColumns is
-    Port ( input : in STD_LOGIC_VECTOR(127 downto 0);
-           direction : in STD_LOGIC;
-           output : in STD_LOGIC_VECTOR(127 downto 0));
-end MixColumns;
+entity MixColumnsByte is
+    Port ( input : in STD_LOGIC_VECTOR (7 downto 0);
+           output : out STD_LOGIC_VECTOR (7 downto 0));
+end MixColumnsByte;
 
-architecture Behavioral of MixColumns is
-    component MixCoumnsSingle is
-        Port ( input : in STD_LOGIC_VECTOR (31 downto 0);
-               output : out STD_LOGIC_VECTOR (31 downto 0));
-    end component;
-    
+architecture Behavioral of MixColumnsByte is
+    constant GALOIS_FIELD_CONSTANT  : STD_LOGIC_VECTOR(7 downto 0) := x"1B";
 begin
+    
+    output(7 downto 0) <= (input(6 downto 0) & '0') when input(7) = '0' else
+                          ((input(6 downto 0) & '0') xor GALOIS_FIELD_CONSTANT);
 
-    columns : for i in range 0 to 3 generate
-        column_mixer : MixCoumnsSingle
-            port map (
-                input => input((i + 1) * 8 - 1 downto i * 8),
-                output => output((i + 1) * 8 - 1 downto i * 8)
-            );
-    
-    end generate columns;
-    
 end Behavioral;

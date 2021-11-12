@@ -2,9 +2,9 @@
 -- Company: 
 -- Engineer: 
 -- 
--- Create Date: 11/11/2021 10:26:20 AM
+-- Create Date: 11/11/2021 12:55:37 PM
 -- Design Name: 
--- Module Name: MixColumns - Behavioral
+-- Module Name: MixColumnsSingle_tb - Behavioral
 -- Project Name: 
 -- Target Devices: 
 -- Tool Versions: 
@@ -31,29 +31,35 @@ use IEEE.STD_LOGIC_1164.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
--- https://en.wikipedia.org/wiki/Rijndael_MixColumns
+entity MixColumnsSingle_tb is
+--  Port ( );
+end MixColumnsSingle_tb;
 
-entity MixColumns is
-    Port ( input : in STD_LOGIC_VECTOR(127 downto 0);
-           direction : in STD_LOGIC;
-           output : in STD_LOGIC_VECTOR(127 downto 0));
-end MixColumns;
-
-architecture Behavioral of MixColumns is
+architecture Behavioral of MixColumnsSingle_tb is
     component MixCoumnsSingle is
         Port ( input : in STD_LOGIC_VECTOR (31 downto 0);
                output : out STD_LOGIC_VECTOR (31 downto 0));
     end component;
     
+    signal input_int : STD_LOGIC_VECTOR (31 downto 0);
+    signal output_int : STD_LOGIC_VECTOR (31 downto 0);
 begin
-
-    columns : for i in range 0 to 3 generate
-        column_mixer : MixCoumnsSingle
-            port map (
-                input => input((i + 1) * 8 - 1 downto i * 8),
-                output => output((i + 1) * 8 - 1 downto i * 8)
+    
+    UUT : MixCoumnsSingle
+        port map (
+            input => input_int,
+            output => output_int
             );
     
-    end generate columns;
+    process begin
+        input_int <= x"455313db"; -- should yield bca14d8e (big endian)
+        wait for 1 ns;
+        input_int <= x"5c220af2"; -- should yield 9d58dc9f
+        wait for 1 ns;
+        input_int <= x"01010101"; -- should yield 01010101
+        wait;
+    end process;
     
+    
+
 end Behavioral;
