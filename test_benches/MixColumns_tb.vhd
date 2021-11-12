@@ -36,8 +36,36 @@ entity MixColumns_tb is
 end MixColumns_tb;
 
 architecture Behavioral of MixColumns_tb is
-
+    component MixColumns is
+        Port ( input : in STD_LOGIC_VECTOR(127 downto 0);
+               direction : in STD_LOGIC;
+               output : in STD_LOGIC_VECTOR(127 downto 0));
+    end component;
+    
+    input_int : STD_LOGIC_VECTOR(127 downto 0);
+    direction_int : STD_LOGIC;
+    output_int : STD_LOGIC_VECTOR(127 downto 0);
 begin
-
+    
+    UUT : MixColumns
+        port map (
+            input => input_int,
+            direction => direction_int,
+            output => output_int
+        );
+    
+    begin process
+        -- https://www.kavaliro.com/wp-content/uploads/2014/03/AES.pdf
+        -- should yield (in little endian):
+        -- 15 C9 7F 9D 
+        -- CE 4D 4B C2 
+        -- 89 71 BE 88 
+        -- 65 47 97 CD
+        input_int(31 downto 0) <= x"bdcb596a";
+        input_int(63 downto 32) <= x"a012484e";
+        input_int(95 downto 64) <= x"9b309e98";
+        input_int(127 downto 96) <= x"9bf43d8b";
+        wait;
+    end process;
 
 end Behavioral;
