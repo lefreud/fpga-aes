@@ -42,11 +42,6 @@ architecture Behavioral of SubBytes_128Bits is
 begin
 
 inst:for i in 0 to 15 generate
-    inst1: if direction = '0' generate
-        byte: entity work.SubBytes port map(input => data_in(127-i*8 downto 128-(i+1)*8), output => data_out(127-i*8 downto 128-(i+1)*8));
-    end generate;
-    inst2: if direction = '1' generate
-        byteInv: entity work.SubBytesInv port map(input => data_in(127-i*8 downto 128-(i+1)*8), output => data_out(127-i*8 downto 128-(i+1)*8));
-    end generate;
+    byte: entity work.SubBytes port map(input => data_in(127-i*8 downto 128-(i+1)*8), direction => direction, output => data_out(127-i*8 downto 128-(i+1)*8));
 end generate;
 end Behavioral;
