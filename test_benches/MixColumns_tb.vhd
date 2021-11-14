@@ -42,9 +42,9 @@ architecture Behavioral of MixColumns_tb is
                output : in STD_LOGIC_VECTOR(127 downto 0));
     end component;
     
-    input_int : STD_LOGIC_VECTOR(127 downto 0);
-    direction_int : STD_LOGIC;
-    output_int : STD_LOGIC_VECTOR(127 downto 0);
+    signal input_int : STD_LOGIC_VECTOR(127 downto 0);
+    signal direction_int : STD_LOGIC;
+    signal output_int : STD_LOGIC_VECTOR(127 downto 0);
 begin
     
     UUT : MixColumns
@@ -54,7 +54,7 @@ begin
             output => output_int
         );
     
-    begin process
+    process begin
         -- https://www.kavaliro.com/wp-content/uploads/2014/03/AES.pdf
         -- should yield (in little endian):
         -- 15 C9 7F 9D 
