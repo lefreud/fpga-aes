@@ -41,28 +41,28 @@ end AES_ROUND;
 
 architecture Behavioral of AES_ROUND is
 
-signal subBytes_input: STD_LOGIC_VECTOR (127 downto 0);
-signal shiftRows_input: STD_LOGIC_VECTOR (127 downto 0);
-signal mixColumns_input: STD_LOGIC_VECTOR (127 downto 0);
+signal subBytes_input: STD_LOGIC_VECTOR (127 downto 0):=(others=>'0');
+signal shiftRows_input: STD_LOGIC_VECTOR (127 downto 0):=(others=>'0');
+signal mixColumns_input: STD_LOGIC_VECTOR (127 downto 0):=(others=>'0');
 signal subBytes_output: STD_LOGIC_VECTOR (127 downto 0);
 signal shiftRows_output: STD_LOGIC_VECTOR (127 downto 0);
 signal mixColumns_output: STD_LOGIC_VECTOR (127 downto 0);
-signal addRoundKey:STD_LOGIC_VECTOR (127 downto 0);
 
 begin
-SubBytes: entity work.SubBytes_128Bits port map(data_in=>inputText, direction=>direction, data_out=>subBytes_output);
-ShiftRows: entity work.ShiftRows port map(data_in=>subBytes_output, direction=>direction, data_out=>shiftRows_output);
-MixColumns: entity work.MixColumns port map(input=>shiftRows_output, direction=>direction, output=>mixColumns_output);
+SubBytes: entity work.SubBytes_128Bits port map(data_in=>subBytes_input, direction=>direction, data_out=>subBytes_output);
+ShiftRows: entity work.ShiftRows port map(data_in=>shiftRows_input, direction=>direction, data_out=>shiftRows_output);
+MixColumns: entity work.MixColumns port map(input=>mixColumns_input, direction=>direction, output=>mixColumns_output);
 
 
-subBytes_input <= inputText when (2**254 mod 256) = 1 else
+subBytes_input <= inputText when direction = '0' else
                   shiftRows_output when direction = '1';
+                  
 shiftRows_input <= subBytes_output when direction = '0' else
                    mixColumns_output when direction = '1';
+                   
 mixColumns_input <= shiftRows_output when direction = '0' else
-                    addRoundKey when direction = '1';
-addRoundKey <= mixColumns_output xor roundKey when direction = '0' else
-               inputText xor roundKey when direction = '1';
-outputText <=  addRoundKey when direction = '0' else
+                    (inputText xor roundKey) when direction = '1';
+    
+outputText <= (mixColumns_output xor roundKey) when direction = '0' else
                subBytes_output when direction = '1';
 end Behavioral;
