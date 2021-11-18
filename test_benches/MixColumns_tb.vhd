@@ -39,7 +39,7 @@ architecture Behavioral of MixColumns_tb is
     component MixColumns is
         Port ( input : in STD_LOGIC_VECTOR(127 downto 0);
                direction : in STD_LOGIC;
-               output : in STD_LOGIC_VECTOR(127 downto 0));
+               output : out STD_LOGIC_VECTOR(127 downto 0));
     end component;
     
     signal input_int : STD_LOGIC_VECTOR(127 downto 0);
@@ -56,15 +56,10 @@ begin
     
     process begin
         -- https://www.kavaliro.com/wp-content/uploads/2014/03/AES.pdf
-        -- should yield (in little endian):
-        -- 15 C9 7F 9D 
-        -- CE 4D 4B C2 
-        -- 89 71 BE 88 
-        -- 65 47 97 CD
-        input_int(31 downto 0) <= x"bdcb596a";
-        input_int(63 downto 32) <= x"a012484e";
-        input_int(95 downto 64) <= x"9b309e98";
-        input_int(127 downto 96) <= x"9bf43d8b";
+        wait for 10 ns;
+        -- (big endian)
+        -- should yield 5d0e327a7d068df4408da4751be884ba
+        input_int <= x"2bcb20a230abc7afc092932fa09feb63";
         wait;
     end process;
 

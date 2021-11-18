@@ -18,26 +18,10 @@
 -- 
 ----------------------------------------------------------------------------------
 
-
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use work.MixColumnsPackage.ALL;
 
-package MixColumnsPackage is
-    type column is array(3 downto 0) of STD_LOGIC_VECTOR(7 downto 0);
-    
-end package MixColumnsPackage;
-
-
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
-
--- https://en.wikipedia.org/wiki/Rijndael_MixColumns
 
 entity MixColumns is
     Port ( input : in STD_LOGIC_VECTOR(127 downto 0);
@@ -89,9 +73,8 @@ begin
             );
     end generate;
 
-    output <= input_columns_int(0)(0) & input_columns_int(1)(0) & input_columns_int(2)(0) & input_columns_int(3)(0) &
-              input_columns_int(0)(1) & input_columns_int(1)(1) & input_columns_int(2)(1) & input_columns_int(3)(1) &
-              input_columns_int(0)(2) & input_columns_int(1)(2) & input_columns_int(2)(2) & input_columns_int(3)(2) &
-              input_columns_int(0)(3) & input_columns_int(1)(3) & input_columns_int(2)(3) & input_columns_int(3)(3);
-    
+    output <= output_columns_int(3)(3) & output_columns_int(2)(3) & output_columns_int(1)(3) & output_columns_int(0)(3) &
+              output_columns_int(3)(2) & output_columns_int(2)(2) & output_columns_int(1)(2) & output_columns_int(0)(2) &
+              output_columns_int(3)(1) & output_columns_int(2)(1) & output_columns_int(1)(1) & output_columns_int(0)(1) &
+              output_columns_int(3)(0) & output_columns_int(2)(0) & output_columns_int(1)(0) & output_columns_int(0)(0);
 end Behavioral;
