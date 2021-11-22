@@ -2,9 +2,9 @@
 -- Company: 
 -- Engineer: 
 -- 
--- Create Date: 11/11/2021 10:26:20 AM
+-- Create Date: 11/22/2021 11:39:54 AM
 -- Design Name: 
--- Module Name: MixColumns - Behavioral
+-- Module Name: MixColumnsInv - Behavioral
 -- Project Name: 
 -- Target Devices: 
 -- Tool Versions: 
@@ -18,22 +18,30 @@
 -- 
 ----------------------------------------------------------------------------------
 
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use work.MixColumnsPackage.ALL;
 
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+--use IEEE.NUMERIC_STD.ALL;
 
-entity MixColumns is
-    Port ( input : in STD_LOGIC_VECTOR(127 downto 0);
-           output : out STD_LOGIC_VECTOR(127 downto 0));
-end MixColumns;
+-- Uncomment the following library declaration if instantiating
+-- any Xilinx leaf cells in this code.
+--library UNISIM;
+--use UNISIM.VComponents.all;
 
-architecture Behavioral of MixColumns is
-    component MixColumnsSingle is
+entity MixColumnsInv is
+    Port ( input : in STD_LOGIC_VECTOR (127 downto 0);
+           output : out STD_LOGIC_VECTOR (127 downto 0));
+end MixColumnsInv;
+
+architecture Behavioral of MixColumnsInv is
+    component MixColumnsSingleInv is
         Port ( input : in column;
                output : out column);
     end component;
-    
     
     type column_block is array(3 downto 0) of column;
     signal input_columns_int : column_block;
@@ -64,7 +72,7 @@ begin
     input_columns_int(3)(3) <= input(127 downto 120);
     
     column_singles : for i in 0 to 3 generate
-        column_mixer1 : MixColumnsSingle
+        column_mixer1 : MixColumnsSingleInv
             port map (
                 input => input_columns_int(i),
                 output => output_columns_int(i)
@@ -75,4 +83,5 @@ begin
               output_columns_int(3)(2) & output_columns_int(2)(2) & output_columns_int(1)(2) & output_columns_int(0)(2) &
               output_columns_int(3)(1) & output_columns_int(2)(1) & output_columns_int(1)(1) & output_columns_int(0)(1) &
               output_columns_int(3)(0) & output_columns_int(2)(0) & output_columns_int(1)(0) & output_columns_int(0)(0);
+
 end Behavioral;

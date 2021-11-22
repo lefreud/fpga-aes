@@ -2,9 +2,9 @@
 -- Company: 
 -- Engineer: 
 -- 
--- Create Date: 11/11/2021 10:28:33 AM
+-- Create Date: 11/22/2021 02:45:29 PM
 -- Design Name: 
--- Module Name: MixColumns_tb - Behavioral
+-- Module Name: MixColumnsInv_tb - Behavioral
 -- Project Name: 
 -- Target Devices: 
 -- Tool Versions: 
@@ -31,12 +31,12 @@ use IEEE.STD_LOGIC_1164.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity MixColumns_tb is
+entity MixColumnsInv_tb is
 --  Port ( );
-end MixColumns_tb;
+end MixColumnsInv_tb;
 
-architecture Behavioral of MixColumns_tb is
-    component MixColumns is
+architecture Behavioral of MixColumnsInv_tb is
+    component MixColumnsInv is
         Port ( input : in STD_LOGIC_VECTOR(127 downto 0);
                output : out STD_LOGIC_VECTOR(127 downto 0));
     end component;
@@ -44,8 +44,8 @@ architecture Behavioral of MixColumns_tb is
     signal input_int : STD_LOGIC_VECTOR(127 downto 0);
     signal output_int : STD_LOGIC_VECTOR(127 downto 0);
 begin
-    
-    UUT : MixColumns
+
+    UUT : MixColumnsInv
         port map (
             input => input_int,
             output => output_int
@@ -55,8 +55,8 @@ begin
         -- https://www.kavaliro.com/wp-content/uploads/2014/03/AES.pdf
         wait for 10 ns;
         -- (big endian)
-        -- should yield 5d0e327a7d068df4408da4751be884ba
-        input_int <= x"2bcb20a230abc7afc092932fa09feb63";
+        -- should yield 2bcb20a230abc7afc092932fa09feb63
+        input_int <= x"5d0e327a7d068df4408da4751be884ba";
         wait;
     end process;
 

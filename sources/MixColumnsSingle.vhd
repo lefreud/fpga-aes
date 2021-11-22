@@ -35,12 +35,12 @@ use work.MixColumnsPackage.ALL;
 -- https://en.wikipedia.org/wiki/Rijndael_MixColumns
 -- https://replit.com/@lefreud/KnowingMatureInfo#main.c
 
-entity MixCoumnsSingle is
+entity MixColumnsSingle is
     Port ( input : in column;
            output : out column);
-end MixCoumnsSingle;
+end MixColumnsSingle;
 
-architecture Behavioral of MixCoumnsSingle is
+architecture Behavioral of MixColumnsSingle is
     component MixColumnsByte is
         Port ( input : in STD_LOGIC_VECTOR (7 downto 0);
                output : out STD_LOGIC_VECTOR (7 downto 0));

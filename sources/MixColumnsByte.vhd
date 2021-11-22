@@ -33,6 +33,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 -- https://en.wikipedia.org/wiki/Rijndael_MixColumns
 
+-- Actually just a simple multiplication by two in GF(2^8)
 entity MixColumnsByte is
     Port ( input : in STD_LOGIC_VECTOR (7 downto 0);
            output : out STD_LOGIC_VECTOR (7 downto 0));
