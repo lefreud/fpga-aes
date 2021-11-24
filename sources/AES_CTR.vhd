@@ -35,6 +35,7 @@ entity AES_CTR is
     generic(number_blocks: integer := 100);
     Port ( input : in STD_LOGIC_VECTOR (number_blocks*128-1 downto 0);
            CLK: in STD_LOGIC;
+           passthrough : in STD_LOGIC;
            direction : in STD_LOGIC;
            key : in STD_LOGIC_VECTOR (127 downto 0);
            output : out STD_LOGIC_VECTOR (number_blocks*128-1 downto 0));
@@ -49,5 +50,6 @@ insti: entity work.aes_block port map(data_input=>input((number_blocks+1)*128-1 
                                       key=>key, 
                                       data_output=>int_output((number_blocks+1)*128-1 downto number_blocks*128));
 end generate;
-output <= int_output;
+output <= input when passthrough = '1' else
+          int_output;
 end Behavioral;
