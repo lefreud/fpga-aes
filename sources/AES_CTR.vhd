@@ -36,19 +36,40 @@ entity AES_CTR is
     Port ( input : in STD_LOGIC_VECTOR (127 downto 0);
            CLK: in STD_LOGIC;
            data_ready_in: in STD_LOGIC;
+           reset:in STD_LOGIC;
            key : in STD_LOGIC_VECTOR (127 downto 0);
-           
            data_ready_out: out STD_LOGIC;
            output : out STD_LOGIC_VECTOR (127 downto 0));
 end AES_CTR;
 
 architecture Behavioral of AES_CTR is
+
+component AES_BLOCK is
+    Port ( Data_INPUT : in STD_LOGIC_VECTOR (127 downto 0);
+           Key : in STD_LOGIC_VECTOR (127 downto 0);
+           Data_ready_in : in STD_LOGIC;
+           CLK : in STD_LOGIC;
+           RESET : in STD_LOGIC;
+           Data_ready_out : out STD_LOGIC;
+           Data_OUTPUT : out STD_LOGIC_VECTOR (127 downto 0));
+end component;
+
 signal aes_output: STD_LOGIC_VECTOR (127 downto 0);
-signal nounce : STD_LOGIC_VECTOR (63 downto 0);
-signal counter : STD_LOGIC_VECTOR (63 downto 0);
+signal nounce : STD_LOGIC_VECTOR (63 downto 0):= x"0123456789012345";
+signal counter : STD_LOGIC_VECTOR (63 downto 0):= x"0000000000000000";
+signal aes_input: STD_LOGIC_VECTOR (127 downto 0);
+
 begin
 
-aes_block: entity work.AES_BLOCK port map (data_ready_in =>data_ready_in, input => (counter & nounce), key =>key, data_ready_out=>data_ready_out, output=>aes_output, CLK=>CLK);
+aes_input <= counter & nounce;
+
+aes_block0: AES_BLOCK port map (Data_ready_in =>data_ready_in, 
+                               Data_INPUT => aes_input, 
+                               Key =>key, 
+                               Data_ready_out=>data_ready_out, 
+                               Data_OUTPUT=>aes_output, 
+                               CLK=>CLK, 
+                               RESET=>RESET);
 
 process(data_ready_in)
 begin
