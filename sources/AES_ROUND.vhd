@@ -48,10 +48,10 @@ signal shiftRows_output: STD_LOGIC_VECTOR (127 downto 0);
 signal mixColumns_output: STD_LOGIC_VECTOR (127 downto 0);
 
 begin
-SubBytes: entity work.SubBytes_128Bits port map(data_in=>subBytes_input, data_out=>outputText);
-ShiftRows: entity work.ShiftRows port map(data_in=>shiftRows_input, data_out=>subBytes_input);
-MixColumns: entity work.MixColumns port map(input=>mixColumns_input, output=>shiftRows_input);
                 
-mixColumns_input <= (inputText xor roundKey);
+subBytes_input <= (inputText xor roundKey);
+SubBytes: entity work.SubBytes_128Bits port map(data_in=>subBytes_input, data_out=>shiftRows_input);
+ShiftRows: entity work.ShiftRows port map(data_in=>shiftRows_input, data_out=>mixColumns_input);
+MixColumns: entity work.MixColumns port map(input=>mixColumns_input, output=>outputText);
 
 end Behavioral;
