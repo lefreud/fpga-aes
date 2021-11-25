@@ -35,7 +35,7 @@ use IEEE.std_logic_unsigned.all;
 use IEEE.std_logic_arith.all;
 
 entity RoundConstants is
- Port (round : in integer:=1;
+ Port (round : in integer;
         rc_next: out  std_logic_vector(31 downto 0));
 end RoundConstants;
 
