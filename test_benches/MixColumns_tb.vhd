@@ -55,8 +55,8 @@ begin
         -- https://www.kavaliro.com/wp-content/uploads/2014/03/AES.pdf
         wait for 10 ns;
         -- (big endian)
-        -- should yield 5d0e327a7d068df4408da4751be884ba
-        input_int <= x"2bcb20a230abc7afc092932fa09feb63";
+        -- should yield 5d7d401b0e068de8328da4847af475ba
+        input_int <= x"2b30c0a0cbab929f20c793eba2af2f63";
         wait;
     end process;
 
