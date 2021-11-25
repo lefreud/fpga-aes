@@ -36,9 +36,22 @@ entity AES_BLOCK_tb is
 end AES_BLOCK_tb;
 
 architecture Behavioral of AES_BLOCK_tb is
-    
+    component AES_BLOCK is
+        Port ( Data_INPUT : in STD_LOGIC_VECTOR (127 downto 0);
+               Key : in STD_LOGIC_VECTOR (127 downto 0);
+               Data_ready_in : in STD_LOGIC;
+               CLK : in STD_LOGIC;
+               RESET : in STD_LOGIC;
+               Data_ready_out : out STD_LOGIC;
+               Data_OUTPUT : out STD_LOGIC_VECTOR (127 downto 0));
+    end component;
+        
     signal Data_INPUT_int : STD_LOGIC_VECTOR (127 downto 0);
     signal Key_int : STD_LOGIC_VECTOR (127 downto 0);
+    signal Data_ready_in_int : STD_LOGIC;
+    signal CLK_int : STD_LOGIC;
+    signal RESET_int : STD_LOGIC;
+    signal Data_ready_out_int : STD_LOGIC;
     signal Data_OUTPUT_int : STD_LOGIC_VECTOR (127 downto 0);
     
 begin
@@ -48,6 +61,21 @@ begin
         -- page 1
         Key_int <= x"754620676e754b20796d207374616854";
         Data_INPUT_int <= x"6f775420656e694e20656e4f206f7754";
+        Data_ready_in_int <= '0';
+        RESET_int <= '1';
+        
+        wait for 5 ns;
+        RESET_int <= '0';
+        
+        wait for 5 ns;
+        Data_ready_in_int <= '1';
+    end process;
+    
+    process begin
+        CLK_int <= '0';
+        wait for 1 ns;
+        CLK_int <= '1';
+        wait for 1 ns;
     end process;
 
 end Behavioral;
