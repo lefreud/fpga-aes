@@ -54,10 +54,10 @@ signal a_int_1: STD_LOGIC_VECTOR(31 downto 0);
 signal roundCon:STD_LOGIC_VECTOR(31 downto 0);
 
 begin
-a_int(0) <= input(127 downto 96);
-a_int(1) <= input(95 downto 64);
-a_int(2) <= input(63 downto 32);
-a_int(3) <= input(31 downto 0);
+a_int(3) <= input(127 downto 96);
+a_int(2) <= input(95 downto 64);
+a_int(1) <= input(63 downto 32);
+a_int(0) <= input(31 downto 0);
 
 rcon: entity work.RoundConstants
 port map(round => round,
@@ -77,10 +77,10 @@ b_int(1) <= b_int(0) xor a_int(1);
 b_int(2) <= b_int(1) xor a_int(2);
 b_int(3) <= b_int(2) xor a_int(3);
 
-output(127 downto 96) <= b_int(0);
-output(95 downto 64) <= b_int(1);
-output(63 downto 32) <= b_int(2);
-output(31 downto 0) <= b_int(3);
+output(127 downto 96) <= b_int(3);
+output(95 downto 64) <= b_int(2);
+output(63 downto 32) <= b_int(1);
+output(31 downto 0) <= b_int(0);
 
 
 end Behavioral;

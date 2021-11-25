@@ -45,12 +45,12 @@ signal w3: std_logic_vector(7 downto 0);
 begin
 process(word_in)
 begin
-w0 <= word_in(31 downto 24);
-w1 <= word_in(23 downto 16);
-w2 <= word_in(15 downto 8);
-w3 <= word_in(7 downto 0);
+w3 <= word_in(31 downto 24);
+w2 <= word_in(23 downto 16);
+w1 <= word_in(15 downto 8);
+w0 <= word_in(7 downto 0);
 end process;
 
-word_out <= w1 & w2& w3& w0;
+word_out <= w0 & w3 & w2 & w1;
 
 end Behavioral;
