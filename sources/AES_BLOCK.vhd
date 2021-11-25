@@ -79,7 +79,6 @@ signal ninethRegister: STD_LOGIC_VECTOR (127 downto 0);
 
 signal tenthRoundKey: STD_LOGIC_VECTOR (127 downto 0);
 signal tenthRoundOutput: STD_LOGIC_VECTOR (127 downto 0);
-signal tenthRegister: STD_LOGIC_VECTOR (127 downto 0);
 
 signal firstDataReceived : STD_LOGIC;
 signal secondDataReceived : STD_LOGIC;
@@ -90,7 +89,6 @@ signal sixthDataReceived : STD_LOGIC;
 signal seventhDataReceived : STD_LOGIC;
 signal eigthDataReceived : STD_LOGIC;
 signal ninethDataReceived : STD_LOGIC;
-signal tenthDataReceived : STD_LOGIC;
 
 begin
 -- Ça se peut que ça chie icitte
