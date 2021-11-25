@@ -45,8 +45,7 @@ architecture Behavioral of AES_CTR is
 signal int_output: STD_LOGIC_VECTOR (number_blocks*128-1 downto 0);
 begin
 aes_block: for i in 0 to (number_blocks-1) generate
-insti: entity work.aes_block port map(data_input=>input((number_blocks+1)*128-1 downto number_blocks*128),
-                                      direction=>direction, 
+insti: entity work.aes_block port map(data_input=>input((number_blocks+1)*128-1 downto number_blocks*128), 
                                       key=>key, 
                                       data_output=>int_output((number_blocks+1)*128-1 downto number_blocks*128));
 end generate;

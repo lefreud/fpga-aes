@@ -36,17 +36,14 @@ end ShiftRows_tb;
 
 architecture Behavioral of ShiftRows_tb is
 
-signal LeftDirection : STD_LOGIC;
-signal RightDirection : STD_LOGIC;
 signal Data_IN : STD_LOGIC_VECTOR (127 downto 0);
-signal Data_OUT_ShiftLeft : STD_LOGIC_VECTOR (127 downto 0);
+signal Data_OUT : STD_LOGIC_VECTOR (127 downto 0);
 signal Data_OUT_ShiftRight : STD_LOGIC_VECTOR (127 downto 0);
 signal Row_IN : STD_LOGIC_VECTOR (31 downto 0);
 signal Row_OUT : STD_LOGIC_VECTOR (31 downto 0);
 
 component ShiftRows is
-    Port ( Direction : in STD_LOGIC;
-           Data_IN : in STD_LOGIC_VECTOR (127 downto 0);
+    Port ( Data_IN : in STD_LOGIC_VECTOR (127 downto 0);
            Data_OUT : out STD_LOGIC_VECTOR (127 downto 0));
 end component;
 
@@ -59,8 +56,7 @@ end component;
 begin
     
     -- We create a component ShiftRows with the two Data signals
-    ShiftRowLeft : ShiftRows port map (Direction => LeftDirection,Data_IN => Data_IN, Data_OUT => Data_OUT_ShiftLeft);
-    ShiftRowRight : ShiftRows port map (Direction => RightDirection,Data_IN => Data_OUT_ShiftLeft, Data_OUT => Data_OUT_ShiftRight);
+    Shift_Rows : ShiftRows port map (Data_IN => Data_IN, Data_OUT => Data_OUT);
     
     -- We create a component ShiftRow with the two Row signals
     ShiftRow_Example : ShiftRow generic map (N => 2) port map (Row_IN => Row_IN, Row_OUT => Row_OUT);
@@ -70,8 +66,5 @@ begin
 
     -- Row_IN = BC 51 EE B3
     Row_IN <= "10111100010100011110111010110011";
-    
-    LeftDirection <= '1';
-    RightDirection <= '0';
     
 end Behavioral;
