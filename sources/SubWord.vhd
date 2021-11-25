@@ -58,7 +58,6 @@ a_int(3) <= word_in(7 downto 0);
 Subwords: for i in 0 to 3 generate
     sub_instance:  entity work.SubBytes
     port map (input => a_int(i),
-                direction => '0',
                 output => b_int(i));
     end generate;
 
