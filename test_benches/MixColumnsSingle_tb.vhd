@@ -2,7 +2,7 @@
 -- Company: 
 -- Engineer: 
 -- 
--- Create Date: 11/11/2021 12:55:37 PM
+-- Create Date: 11/25/2021 11:50:55 AM
 -- Design Name: 
 -- Module Name: MixColumnsSingle_tb - Behavioral
 -- Project Name: 
@@ -21,6 +21,7 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use work.MixColumnsPackage.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -36,30 +37,46 @@ entity MixColumnsSingle_tb is
 end MixColumnsSingle_tb;
 
 architecture Behavioral of MixColumnsSingle_tb is
-    component MixCoumnsSingle is
-        Port ( input : in STD_LOGIC_VECTOR (31 downto 0);
-               output : out STD_LOGIC_VECTOR (31 downto 0));
+    component MixColumnsSingle is
+        Port ( input : in column;
+               output : out column);
     end component;
     
-    signal input_int : STD_LOGIC_VECTOR (31 downto 0);
-    signal output_int : STD_LOGIC_VECTOR (31 downto 0);
+    signal input_int : column;
+    signal output_int : column;
 begin
-    
-    UUT : MixCoumnsSingle
+    UUT : MixColumnsSingle
         port map (
             input => input_int,
             output => output_int
-            );
+        );
     
+    -- https://en.wikipedia.org/wiki/Rijndael_MixColumns#Test_vectors_for_MixColumn()
     process begin
-        input_int <= x"455313db"; -- should yield bca14d8e (big endian)
-        wait for 1 ns;
-        input_int <= x"5c220af2"; -- should yield 9d58dc9f
-        wait for 1 ns;
-        input_int <= x"01010101"; -- should yield 01010101
+        -- should yield 8e 4d a1 bc (little endian)
+        input_int(0) <= x"db";
+        input_int(1) <= x"13";
+        input_int(2) <= x"53";
+        input_int(3) <= x"45";
+        wait for 10 ns;
+        -- should yield 9f dc 58 9d (little endian)
+        input_int(0) <= x"f2";
+        input_int(1) <= x"0a";
+        input_int(2) <= x"22";
+        input_int(3) <= x"5c";
+        wait for 10 ns;
+        -- should yield 01 01 01 01 (little endian)
+        input_int(0) <= x"01";
+        input_int(1) <= x"01";
+        input_int(2) <= x"01";
+        input_int(3) <= x"01";
+        wait for 10 ns;
+        -- 7a,f4,75,ba -- shouldnt output cU,eb,4U,27
+        input_int(0) <= x"ba";
+        input_int(1) <= x"75";
+        input_int(2) <= x"f4";
+        input_int(3) <= x"7a";
         wait;
     end process;
-    
-    
 
 end Behavioral;
