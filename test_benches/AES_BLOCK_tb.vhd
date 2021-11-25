@@ -55,7 +55,18 @@ architecture Behavioral of AES_BLOCK_tb is
     signal Data_OUTPUT_int : STD_LOGIC_VECTOR (127 downto 0);
     
 begin
-
+    UUT : AES_BLOCK
+        port map (
+              Data_INPUT => Data_INPUT_int,
+              Key => Key_int,
+              Data_ready_in => Data_ready_in_int,
+              CLK => CLK_int,
+              RESET => RESET_int,
+              Data_ready_out => Data_ready_out_int,
+              Data_OUTPUT => Data_OUTPUT_int
+        );
+    
+    
     process begin
         -- https://www.kavaliro.com/wp-content/uploads/2014/03/AES.pdf
         -- page 1
@@ -69,6 +80,7 @@ begin
         
         wait for 5 ns;
         Data_ready_in_int <= '1';
+        wait;
     end process;
     
     process begin
