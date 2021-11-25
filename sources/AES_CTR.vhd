@@ -21,6 +21,7 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_unsigned.ALL;
 library work;
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -32,24 +33,29 @@ library work;
 --use UNISIM.VComponents.all;
 
 entity AES_CTR is
-    generic(number_blocks: integer := 100);
-    Port ( input : in STD_LOGIC_VECTOR (number_blocks*128-1 downto 0);
+    Port ( input : in STD_LOGIC_VECTOR (127 downto 0);
            CLK: in STD_LOGIC;
-           passthrough : in STD_LOGIC;
-           direction : in STD_LOGIC;
+           data_ready_in: in STD_LOGIC;
            key : in STD_LOGIC_VECTOR (127 downto 0);
-           output : out STD_LOGIC_VECTOR (number_blocks*128-1 downto 0));
+           
+           data_ready_out: out STD_LOGIC;
+           output : out STD_LOGIC_VECTOR (127 downto 0));
 end AES_CTR;
 
 architecture Behavioral of AES_CTR is
-signal int_output: STD_LOGIC_VECTOR (number_blocks*128-1 downto 0);
+signal aes_output: STD_LOGIC_VECTOR (127 downto 0);
+signal nounce : STD_LOGIC_VECTOR (63 downto 0);
+signal counter : STD_LOGIC_VECTOR (63 downto 0);
 begin
-aes_block: for i in 0 to (number_blocks-1) generate
-insti: entity work.aes_block port map(data_input=>input((number_blocks+1)*128-1 downto number_blocks*128),
-                                      direction=>direction, 
-                                      key=>key, 
-                                      data_output=>int_output((number_blocks+1)*128-1 downto number_blocks*128));
-end generate;
-output <= input when passthrough = '1' else
-          int_output;
+
+aes_block: entity work.AES_BLOCK port map (data_ready_in =>data_ready_in, input => (counter & nounce), key =>key, data_ready_out=>data_ready_out, output=>aes_output, CLK=>CLK);
+
+process(data_ready_in)
+begin
+    if(data_ready_in'event and data_ready_in = '1') then
+        counter <= counter + 1;
+    end if;
+end process;
+
+output <= input xor aes_output;
 end Behavioral;
