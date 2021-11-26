@@ -38,31 +38,26 @@ end ShiftRows;
 
 architecture Behavioral of ShiftRows is
 
-signal firstRowShiftLeft: std_logic_vector(31 downto 0);
-signal secondRowShiftLeft: std_logic_vector(31 downto 0);
-signal thirdRowShiftLeft: std_logic_vector(31 downto 0);
-signal fourthRowShiftLeft: std_logic_vector(31 downto 0);
-signal firstRowShiftRight: std_logic_vector(31 downto 0);
-signal secondRowShiftRight: std_logic_vector(31 downto 0);
-signal thirdRowShiftRight: std_logic_vector(31 downto 0);
-signal fourthRowShiftRight: std_logic_vector(31 downto 0);
-
-component ShiftRow is
-    generic (N : integer);
-    Port ( Row_IN : in STD_LOGIC_VECTOR (31 downto 0);
-           Row_OUT : out STD_LOGIC_VECTOR (31 downto 0));
-end component;
-
 begin
 
-ShiftRowLeft_FirstRow : ShiftRow generic map (N => 0) port map (Row_IN => Data_IN(127 downto 96), Row_OUT => firstRowShiftLeft);
-ShiftRowLeft_SecondRow : ShiftRow generic map (N => 1) port map (Row_IN => Data_IN(95 downto 64), Row_OUT => secondRowShiftLeft);
-ShiftRowLeft_ThirdRow : ShiftRow generic map (N => 2) port map (Row_IN => Data_IN(63 downto 32), Row_OUT => thirdRowShiftLeft);
-ShiftRowLeft_FourthRow : ShiftRow generic map (N => 3) port map (Row_IN => Data_IN(31 downto 0), Row_OUT => fourthRowShiftLeft);
+Data_OUT(7 downto 0) <= Data_IN(7 downto 0);
+Data_OUT(15 downto 8) <= Data_IN(47 downto 40);
+Data_OUT(23 downto 16) <= Data_IN(87 downto 80);
+Data_OUT(31 downto 24) <= Data_IN(127 downto 120);
 
-Data_OUT(127 downto 96) <= firstRowShiftLeft;
-Data_OUT(95 downto 64) <= secondRowShiftLeft;
-Data_OUT(63 downto 32) <= thirdRowShiftLeft;
-Data_OUT(31 downto 0) <= fourthRowShiftLeft;
+Data_OUT(39 downto 32) <= Data_IN(39 downto 32);
+Data_OUT(47 downto 40) <= Data_IN(79 downto 72);
+Data_OUT(55 downto 48) <= Data_IN(119 downto 112);
+Data_OUT(63 downto 56) <= Data_IN(31 downto 24);
+
+Data_OUT(71 downto 64) <= Data_IN(71 downto 64);
+Data_OUT(79 downto 72) <= Data_IN(111 downto 104);
+Data_OUT(87 downto 80) <= Data_IN(23 downto 16);
+Data_OUT(95 downto 88) <= Data_IN(63 downto 56);
+
+Data_OUT(103 downto 96) <= Data_IN(103 downto 96);
+Data_OUT(111 downto 104) <= Data_IN(15 downto 8);
+Data_OUT(119 downto 112) <= Data_IN(55 downto 48);
+Data_OUT(127 downto 120) <= Data_IN(95 downto 88);
 
 end Behavioral;
