@@ -13,6 +13,16 @@ end AES_BLOCK;
 
 architecture Behavioral of AES_BLOCK is
 
+component SubBytes_128Bits is
+    Port ( data_in : in STD_LOGIC_VECTOR (127 downto 0);
+           data_out : out STD_LOGIC_VECTOR (127 downto 0));
+end component;
+
+component ShiftRows is
+    Port ( Data_IN : in STD_LOGIC_VECTOR (127 downto 0);
+           Data_OUT : out STD_LOGIC_VECTOR (127 downto 0));
+end component;
+
 component Register128Bits is
     Port ( RESET : in STD_LOGIC;
            CLK : in STD_LOGIC;
@@ -90,56 +100,63 @@ signal seventhDataReceived : STD_LOGIC;
 signal eigthDataReceived : STD_LOGIC;
 signal ninethDataReceived : STD_LOGIC;
 
+signal addRoundKey0 : STD_LOGIC_VECTOR (127 downto 0);
+signal shiftRows_input: STD_LOGIC_VECTOR (127 downto 0):=(others=>'0');
+signal lastRoundKey_input: STD_LOGIC_VECTOR (127 downto 0):=(others=>'0');
+
 begin
--- Ça se peut que ça chie icitte
-firstRoundKey <= Key;
-First_Round : AES_ROUND port map (inputText => Data_INPUT, roundKey => firstRoundKey, outputText => firstRoundOutput);
+-- Premier roundKey avant les 9 rounds standards!
+addRoundKey0 <= (Data_INPUT xor Key);
+First_Round_Key : AES_key_schedule port map (input => Key, output => firstRoundKey, round => 1);
+First_Round : AES_ROUND port map (inputText => addRoundKey0, roundKey => firstRoundKey, outputText => firstRoundOutput);
 First_Register : Register128Bits port map (RESET => RESET, CLK => CLK, Data_IN => firstRoundOutput, EN => Data_ready_in, Data_OUT => firstRegister);
 First_Data_Received : BitRegister port map (RESET => RESET, CLK => CLK, D => Data_ready_in, EN => Data_ready_in, Q => firstDataReceived);
 
-Second_Round_Key : AES_key_schedule port map (input => firstRoundKey, output => secondRoundKey, round => 1);
+Second_Round_Key : AES_key_schedule port map (input => firstRoundKey, output => secondRoundKey, round => 2);
 Second_Round : AES_ROUND port map (inputText => firstRegister, roundKey => secondRoundKey, outputText => secondRoundOutput);
 Second_Register : Register128Bits port map (RESET => RESET, CLK => CLK, Data_IN => secondRoundOutput, EN => Data_ready_in, Data_OUT => secondRegister);
 Second_Data_Received : BitRegister port map (RESET => RESET, CLK => CLK, D => firstDataReceived, EN => Data_ready_in, Q => secondDataReceived);
 
-Third_Round_Key : AES_key_schedule port map (input => secondRoundKey, output => thirdRoundKey, round => 2);
+Third_Round_Key : AES_key_schedule port map (input => secondRoundKey, output => thirdRoundKey, round => 3);
 Third_Round : AES_ROUND port map (inputText => secondRegister, roundKey => thirdRoundKey, outputText => thirdRoundOutput);
 Third_Register : Register128Bits port map (RESET => RESET, CLK => CLK, Data_IN => thirdRoundOutput, EN => Data_ready_in, Data_OUT => thirdRegister);
 Third_Data_Received : BitRegister port map (RESET => RESET, CLK => CLK, D => secondDataReceived, EN => Data_ready_in, Q => thirdDataReceived);
 
-Fourth_Round_Key : AES_key_schedule port map (input => thirdRoundKey, output => fourthRoundKey, round => 3);
+Fourth_Round_Key : AES_key_schedule port map (input => thirdRoundKey, output => fourthRoundKey, round => 4);
 Fourth_Round : AES_ROUND port map (inputText => thirdRegister, roundKey => fourthRoundKey, outputText => fourthRoundOutput);
 Fourth_Register : Register128Bits port map (RESET => RESET, CLK => CLK, Data_IN => fourthRoundOutput, EN => Data_ready_in, Data_OUT => fourthRegister);
 Fourth_Data_Received : BitRegister port map (RESET => RESET, CLK => CLK, D => thirdDataReceived, EN => Data_ready_in, Q => fourthDataReceived);
 
-Fifth_Round_Key : AES_key_schedule port map (input => fourthRoundKey, output => fifthRoundKey, round => 4);
+Fifth_Round_Key : AES_key_schedule port map (input => fourthRoundKey, output => fifthRoundKey, round => 5);
 FifthRound : AES_ROUND port map (inputText => fourthRegister, roundKey => fifthRoundKey, outputText => fifthRoundOutput);
 Fifth_Register : Register128Bits port map (RESET => RESET, CLK => CLK, Data_IN => fifthRoundOutput, EN => Data_ready_in, Data_OUT => fifthRegister);
 Fifth_Data_Received : BitRegister port map (RESET => RESET, CLK => CLK, D => fourthDataReceived, EN => Data_ready_in, Q => fifthDataReceived);
 
-Sixth_Round_Key : AES_key_schedule port map (input => fifthRoundKey, output => sixthRoundKey, round => 5);
+Sixth_Round_Key : AES_key_schedule port map (input => fifthRoundKey, output => sixthRoundKey, round => 6);
 Sixth_Round : AES_ROUND port map (inputText => fifthRegister, roundKey => sixthRoundKey, outputText => sixthRoundOutput);
 Sixth_Register : Register128Bits port map (RESET => RESET, CLK => CLK, Data_IN => sixthRoundOutput, EN => Data_ready_in, Data_OUT => sixthRegister);
 Sixth_Data_Received : BitRegister port map (RESET => RESET, CLK => CLK, D => fifthDataReceived, EN => Data_ready_in, Q => sixthDataReceived);
 
-Seventh_Round_Key : AES_key_schedule port map (input => sixthRoundKey, output => seventhRoundKey, round => 6);
+Seventh_Round_Key : AES_key_schedule port map (input => sixthRoundKey, output => seventhRoundKey, round => 7);
 Seventh_Round : AES_ROUND port map (inputText => sixthRegister, roundKey => seventhRoundKey, outputText => seventhRoundOutput);
 Seventh_Register : Register128Bits port map (RESET => RESET, CLK => CLK, Data_IN => seventhRoundOutput, EN => Data_ready_in, Data_OUT => seventhRegister);
 Seventh_Data_Received : BitRegister port map (RESET => RESET, CLK => CLK, D => sixthDataReceived, EN => Data_ready_in, Q => seventhDataReceived);
 
-Eigth_Round_Key : AES_key_schedule port map (input => seventhRoundKey, output => eigthRoundKey, round => 7);
-Eigth_Round : AES_ROUND port map (inputText => seventhRoundOutput, roundKey => eigthRoundKey, outputText => eigthRoundOutput);
+Eigth_Round_Key : AES_key_schedule port map (input => seventhRoundKey, output => eigthRoundKey, round => 8);
+Eigth_Round : AES_ROUND port map (inputText => seventhRegister, roundKey => eigthRoundKey, outputText => eigthRoundOutput);
 Eigth_Register : Register128Bits port map (RESET => RESET, CLK => CLK, Data_IN => eigthRoundOutput, EN => Data_ready_in, Data_OUT => eigthRegister);
 Eigth_Data_Received : BitRegister port map (RESET => RESET, CLK => CLK, D => seventhDataReceived, EN => Data_ready_in, Q => eigthDataReceived);
 
-Nineth_Round_Key : AES_key_schedule port map (input => eigthRoundKey, output => ninethRoundKey, round => 8);
-Nineth_Round : AES_ROUND port map (inputText => eigthRoundOutput, roundKey => ninethRoundKey, outputText => ninethRoundOutput);
+Nineth_Round_Key : AES_key_schedule port map (input => eigthRoundKey, output => ninethRoundKey, round => 9);
+Nineth_Round : AES_ROUND port map (inputText => eigthRegister, roundKey => ninethRoundKey, outputText => ninethRoundOutput);
 Nineth_Register : Register128Bits port map (RESET => RESET, CLK => CLK, Data_IN => ninethRoundOutput, EN => Data_ready_in, Data_OUT => ninethRegister);
 Nineth_Data_Received : BitRegister port map (RESET => RESET, CLK => CLK, D => eigthDataReceived, EN => Data_ready_in, Q => ninethDataReceived);
 
-Tenth_Round_Key : AES_key_schedule port map (input => ninethRoundKey, output => tenthRoundKey, round => 9);
-Tenth_Round : AES_ROUND port map (inputText => ninethRoundOutput, roundKey => tenthRoundKey, outputText => tenthRoundOutput);
-Tenth_Register : Register128Bits port map (RESET => RESET, CLK => CLK, Data_IN => tenthRoundOutput, EN => Data_ready_in, Data_OUT => Data_OUTPUT);
+-- The last round doesn't have a MixColumns
+Tenth_Round_Key : AES_key_schedule port map (input => ninethRoundKey, output => tenthRoundKey, round => 10);
+LastSubBytes: SubBytes_128Bits port map(data_in=>ninethRegister, data_out=>shiftRows_input);
+LastShiftRows: ShiftRows port map(data_in=>shiftRows_input, data_out=>lastRoundKey_input);
 Tenth_Data_Received : BitRegister port map (RESET => RESET, CLK => CLK, D => ninethDataReceived, EN => Data_ready_in, Q => Data_ready_out);
+Data_OUTPUT <= (lastRoundKey_input xor tenthRoundKey);
 
 end Behavioral;

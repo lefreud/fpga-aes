@@ -40,7 +40,6 @@ end AES_ROUND;
 
 architecture Behavioral of AES_ROUND is
 
-signal subBytes_input: STD_LOGIC_VECTOR (127 downto 0):=(others=>'0');
 signal shiftRows_input: STD_LOGIC_VECTOR (127 downto 0):=(others=>'0');
 signal mixColumns_input: STD_LOGIC_VECTOR (127 downto 0):=(others=>'0');
 signal subBytes_output: STD_LOGIC_VECTOR (127 downto 0);
@@ -48,10 +47,10 @@ signal shiftRows_output: STD_LOGIC_VECTOR (127 downto 0);
 signal mixColumns_output: STD_LOGIC_VECTOR (127 downto 0);
 
 begin
-                
-subBytes_input <= (inputText xor roundKey);
-SubBytes: entity work.SubBytes_128Bits port map(data_in=>subBytes_input, data_out=>shiftRows_input);
+
+SubBytes: entity work.SubBytes_128Bits port map(data_in=>inputText, data_out=>shiftRows_input);
 ShiftRows: entity work.ShiftRows port map(data_in=>shiftRows_input, data_out=>mixColumns_input);
-MixColumns: entity work.MixColumns port map(input=>mixColumns_input, output=>outputText);
+MixColumns: entity work.MixColumns port map(input=>mixColumns_input, output=>mixColumns_output);
+outputText <= (mixColumns_output xor roundKey);
 
 end Behavioral;

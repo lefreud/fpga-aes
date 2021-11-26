@@ -35,7 +35,7 @@ use work.ALL;
 
 entity AES_key_schedule is
     Port ( input : in STD_LOGIC_VECTOR (127 downto 0);
-            round : in integer;
+           round : in integer;
            output : out STD_LOGIC_VECTOR (127 downto 0));
 end AES_key_schedule;
 
