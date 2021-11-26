@@ -43,9 +43,6 @@ architecture Behavioral of AES_ROUND is
 signal subBytes_input: STD_LOGIC_VECTOR (127 downto 0):=(others=>'0');
 signal shiftRows_input: STD_LOGIC_VECTOR (127 downto 0):=(others=>'0');
 signal mixColumns_input: STD_LOGIC_VECTOR (127 downto 0):=(others=>'0');
-signal subBytes_output: STD_LOGIC_VECTOR (127 downto 0);
-signal shiftRows_output: STD_LOGIC_VECTOR (127 downto 0);
-signal mixColumns_output: STD_LOGIC_VECTOR (127 downto 0);
 
 begin
                 
