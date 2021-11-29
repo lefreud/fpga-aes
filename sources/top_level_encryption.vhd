@@ -34,6 +34,7 @@ use IEEE.STD_LOGIC_unsigned.ALL;
 
 entity top_level_encryption is
     Port ( clk : in STD_LOGIC;
+           clk_uart: in STD_LOGIC;
            reset : in STD_LOGIC;
            enable : in STD_LOGIC;
            data_in : in STD_LOGIC_VECTOR (23 downto 0);
@@ -62,6 +63,23 @@ component AES_CTR is
            output : out STD_LOGIC_VECTOR (127 downto 0));
 end component;
 
+component sync_bram is
+    port (read_clk, write_clk, enable, write_enable : in std_logic;
+          addr_write, addr_read : in std_logic_vector(13 downto 0); -- 11250 blocks so 14 bits for the address
+          write_data : in std_logic_vector(127 downto 0); -- Blocks of 128 bits
+          read_data : out std_logic_vector(127 downto 0)); -- Blocks of 128 bits
+end component; 
+
+component Transmetteur_UART is
+    Port ( clk : in STD_LOGIC;
+           start : in STD_LOGIC;
+           reset : in STD_LOGIC;
+           tx : out STD_LOGIC;
+           termine : out STD_LOGIC;
+           occupe : out STD_LOGIC;
+           datain : in STD_LOGIC_VECTOR (127 downto 0));
+end component;
+
 signal key: STD_LOGIC_VECTOR (127 downto 0):= x"55555555555555555555555555555555";
 
 signal enable_decalage: STD_LOGIC;
@@ -74,8 +92,16 @@ signal data_encrypte_red: STD_LOGIC_VECTOR (127 downto 0);
 type type_etat is (attente, stocker, envoyer);
 signal etat: type_etat:= attente;
 
-signal counter_stocker: STD_LOGIC_VECTOR (20 downto 0):= (others => '0');
-signal counter_envoie: STD_LOGIC_VECTOR (20 downto 0):= (others => '0');
+signal counter_stocker: STD_LOGIC_VECTOR (13 downto 0):= (others => '0');
+signal counter_envoie: STD_LOGIC_VECTOR (13 downto 0):= (others => '0');
+
+signal bram_enable:STD_LOGIC;
+signal bram_read_data:STD_LOGIC_VECTOR (127 downto 0);
+
+signal start_uart:STD_LOGIC;
+signal reset_uart:STD_LOGIC;
+signal termine_uart:STD_LOGIC;
+signal occupe_uart:STD_LOGIC;
 
 begin
 reg_decalage_red: registre_decalage port map (data_in => data_in(23),
@@ -91,6 +117,24 @@ aes_red: aes_ctr port map(input =>data_out_decalage_red,
                           key =>key, 
                           data_ready_out =>data_ready_out_ctr_red, 
                           output =>data_encrypte_red);
+                          
+                          
+bram: sync_bram port map( read_clk => clk_uart,
+                          write_clk => clk, 
+                          enable => bram_enable, 
+                          write_enable => data_ready_out_ctr_red,
+                          addr_write => counter_stocker, 
+                          addr_read => counter_envoie,
+                          write_data => data_encrypte_red,
+                          read_data=> bram_read_data);
+                          
+uart: transmetteur_uart port map( clk => clk_uart,
+                                  start => start_uart,
+                                  reset => reset_uart,
+                                  tx => data_uart,
+                                  termine => termine_uart,
+                                  occupe => occupe_uart,
+                                  datain => bram_read_data);
             
 process(CLK, reset)
 begin
@@ -99,6 +143,10 @@ if(reset = '1') then
 elsif(clk = '1' and clk'event) then
     case etat is
         when attente =>
+            reset_uart <= '1';
+            start_uart <= '0';
+            enable_decalage <= '0';
+            reset_decalage <= '1';
             counter_stocker <= (others => '0');
             if(enable = '1')then
                 etat <= stocker;
@@ -113,6 +161,7 @@ elsif(clk = '1' and clk'event) then
         when envoyer =>
             enable_decalage <= '0';
             reset_decalage <= '1';
+            start_uart <= '1';
             if(counter_envoie = (11250-1)) then
                 etat <= attente;
             end if;
@@ -127,18 +176,17 @@ begin
     if(clk='1' and clk'event) then
         if(data_ready_out_ctr_red = '1') then
             counter_stocker <= counter_stocker + 1;
-            if(counter_stocker = 11250) then
-                counter_stocker <= (others => '0');
-            end if;
         end if;
     end if;
 end process;
 
 
-process(clk)
+process(clk_uart)
 begin
-    if(clk='1' and clk'event) then
-        counter_envoie <= counter_envoie + 1;
+    if(clk_uart='1' and clk_uart'event) then
+        if(termine_uart = '1') then
+            counter_envoie <= counter_envoie + 1;
+        end if;
     end if;
 end process;
 end Behavioral;
