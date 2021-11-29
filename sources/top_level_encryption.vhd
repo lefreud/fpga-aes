@@ -64,7 +64,7 @@ component AES_CTR is
 end component;
 
 component sync_bram is
-    port (read_clk, write_clk, enable, write_enable : in std_logic;
+    port (read_clk, write_clk, write_enable : in std_logic;
           addr_write, addr_read : in std_logic_vector(13 downto 0); -- 11250 blocks so 14 bits for the address
           write_data : in std_logic_vector(127 downto 0); -- Blocks of 128 bits
           read_data : out std_logic_vector(127 downto 0)); -- Blocks of 128 bits
@@ -95,7 +95,6 @@ signal etat: type_etat:= attente;
 signal counter_stocker: STD_LOGIC_VECTOR (13 downto 0):= (others => '0');
 signal counter_envoie: STD_LOGIC_VECTOR (13 downto 0):= (others => '0');
 
-signal bram_enable:STD_LOGIC;
 signal bram_read_data:STD_LOGIC_VECTOR (127 downto 0);
 
 signal start_uart:STD_LOGIC;
@@ -121,7 +120,6 @@ aes_red: aes_ctr port map(input =>data_out_decalage_red,
                           
 bram: sync_bram port map( read_clk => clk_uart,
                           write_clk => clk, 
-                          enable => bram_enable, 
                           write_enable => data_ready_out_ctr_red,
                           addr_write => counter_stocker, 
                           addr_read => counter_envoie,
