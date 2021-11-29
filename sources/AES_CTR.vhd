@@ -55,13 +55,13 @@ component AES_BLOCK is
 end component;
 
 signal aes_output: STD_LOGIC_VECTOR (127 downto 0);
-signal nounce : STD_LOGIC_VECTOR (63 downto 0):= x"0123456789012345";
+signal nonce : STD_LOGIC_VECTOR (63 downto 0):= x"0123456789012345";
 signal counter : STD_LOGIC_VECTOR (63 downto 0):= x"0000000000000000";
 signal aes_input: STD_LOGIC_VECTOR (127 downto 0);
 
 begin
 
-aes_input <= counter & nounce;
+aes_input <= counter & nonce;
 
 aes_block0: AES_BLOCK port map (Data_ready_in =>data_ready_in, 
                                Data_INPUT => aes_input, 

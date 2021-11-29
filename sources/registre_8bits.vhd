@@ -32,22 +32,22 @@ library work;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity registre_8bits is
-    Port ( input : in STD_LOGIC_VECTOR (7 downto 0);
-           output : out STD_LOGIC_VECTOR (7 downto 0);
+entity registre_1bit is
+    Port ( input : in STD_LOGIC;
+           output : out STD_LOGIC;
            clk : in STD_LOGIC;
            reset : in STD_LOGIC;
            enable : in STD_LOGIC);
-end registre_8bits;
+end registre_1bit;
 
-architecture Behavioral of registre_8bits is
+architecture Behavioral of registre_1bit is
 
 begin
 
 process(CLK, reset)
 begin
 if(reset = '1') then
-    output <= "00000000";
+    output <= '0';
 elsif(clk'event and clk='1') then
     if(enable = '1') then
         output <= input;

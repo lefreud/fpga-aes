@@ -21,6 +21,7 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_unsigned.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -34,6 +35,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 entity top_level_encryption is
     Port ( clk : in STD_LOGIC;
            reset : in STD_LOGIC;
+           enable : in STD_LOGIC;
            data_in : in STD_LOGIC_VECTOR (23 downto 0);
            passthrough : in STD_LOGIC;
            data_uart : out STD_LOGIC);
@@ -43,7 +45,7 @@ end top_level_encryption;
 architecture Behavioral of top_level_encryption is
 
 component registre_decalage is
-    Port ( data_in : in STD_LOGIC_VECTOR (7 downto 0);
+    Port ( data_in : in STD_LOGIC;
            data_out : out STD_LOGIC_VECTOR (127 downto 0);
            data_ready_out: out STD_LOGIC;
            CLK : in STD_LOGIC;
@@ -60,29 +62,28 @@ component AES_CTR is
            output : out STD_LOGIC_VECTOR (127 downto 0));
 end component;
 
-signal key: STD_LOGIC_VECTOR (127 downto 0);
+signal key: STD_LOGIC_VECTOR (127 downto 0):= x"55555555555555555555555555555555";
 
+signal enable_decalage: STD_LOGIC;
+signal reset_decalage: STD_LOGIC;
 signal data_out_decalage_red: STD_LOGIC_VECTOR (127 downto 0);
 signal data_ready_in_ctr_red: STD_LOGIC;
 signal data_ready_out_ctr_red: STD_LOGIC;
 signal data_encrypte_red: STD_LOGIC_VECTOR (127 downto 0);
 
-signal data_out_decalage_green: STD_LOGIC_VECTOR (127 downto 0);
-signal data_ready_in_ctr_green: STD_LOGIC;
-signal data_ready_out_ctr_green: STD_LOGIC;
-signal data_encrypte_green: STD_LOGIC_VECTOR (127 downto 0);
+type type_etat is (attente, stocker, envoyer);
+signal etat: type_etat:= attente;
 
-signal data_out_decalage_blue: STD_LOGIC_VECTOR (127 downto 0);
-signal data_ready_in_ctr_blue: STD_LOGIC;
-signal data_ready_out_ctr_blue: STD_LOGIC;
-signal data_encrypte_blue: STD_LOGIC_VECTOR (127 downto 0);
+signal counter_stocker: STD_LOGIC_VECTOR (20 downto 0):= (others => '0');
+signal counter_envoie: STD_LOGIC_VECTOR (20 downto 0):= (others => '0');
 
 begin
-reg_decalage_red: registre_decalage port map (data_in => data_in(23 downto 16),
+reg_decalage_red: registre_decalage port map (data_in => data_in(23),
                                               data_out => data_out_decalage_red,
                                               data_ready_out =>data_ready_in_ctr_red,
-                                              CLK => CLK, enable => '1',
-                                              reset => reset);
+                                              CLK => CLK, 
+                                              enable => '1',
+                                              reset => reset_decalage);
                                           
 aes_red: aes_ctr port map(input =>data_out_decalage_red,
                           clk=>clk, 
@@ -90,33 +91,55 @@ aes_red: aes_ctr port map(input =>data_out_decalage_red,
                           key =>key, 
                           data_ready_out =>data_ready_out_ctr_red, 
                           output =>data_encrypte_red);
-                          
-                          
-reg_decalage_green: registre_decalage port map (data_in => data_in(15 downto 8),
-                                              data_out => data_out_decalage_green,
-                                              data_ready_out =>data_ready_in_ctr_green,
-                                              CLK => CLK, enable => '1',
-                                              reset => reset);
-                                          
-aes_green: aes_ctr port map(input =>data_out_decalage_green,
-                          clk=>clk, 
-                          data_ready_in =>data_ready_in_ctr_green, 
-                          key =>key, 
-                          data_ready_out =>data_ready_out_ctr_green, 
-                          output =>data_encrypte_green);
-                          
-                          
-reg_decalage_blue: registre_decalage port map (data_in => data_in(7 downto 0),
-                                              data_out => data_out_decalage_blue,
-                                              data_ready_out =>data_ready_in_ctr_blue,
-                                              CLK => CLK, enable => '1',
-                                              reset => reset);
-                                          
-aes_blue: aes_ctr port map(input =>data_out_decalage_blue,
-                          clk=>clk, 
-                          data_ready_in =>data_ready_in_ctr_blue, 
-                          key =>key, 
-                          data_ready_out =>data_ready_out_ctr_blue, 
-                          output =>data_encrypte_blue);
+            
+process(CLK, reset)
+begin
+if(reset = '1') then
+    etat <= attente;
+elsif(clk = '1' and clk'event) then
+    case etat is
+        when attente =>
+            counter_stocker <= (others => '0');
+            if(enable = '1')then
+                etat <= stocker;
+            end if;
+        when stocker =>
+            enable_decalage <= '1';
+            counter_envoie <= (others => '0');
+            reset_decalage <= '0';
+            if(counter_stocker = (11250-1)) then
+                etat <= envoyer;
+            end if;
+        when envoyer =>
+            enable_decalage <= '0';
+            reset_decalage <= '1';
+            if(counter_envoie = (11250-1)) then
+                etat <= attente;
+            end if;
+        when others =>
+            etat <= attente;
+    end case;
+end if;
+end process;
+
+process(clk)
+begin
+    if(clk='1' and clk'event) then
+        if(data_ready_out_ctr_red = '1') then
+            counter_stocker <= counter_stocker + 1;
+            if(counter_stocker = 11250) then
+                counter_stocker <= (others => '0');
+            end if;
+        end if;
+    end if;
+end process;
+
+
+process(clk)
+begin
+    if(clk='1' and clk'event) then
+        counter_envoie <= counter_envoie + 1;
+    end if;
+end process;
 end Behavioral;
 
