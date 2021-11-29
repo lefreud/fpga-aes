@@ -2,9 +2,9 @@
 -- Company: 
 -- Engineer: 
 -- 
--- Create Date: 11/25/2021 10:54:40 AM
+-- Create Date: 12.10.2021 21:08:31
 -- Design Name: 
--- Module Name: registre_8bits - Behavioral
+-- Module Name: cmp2bits - Behavioral
 -- Project Name: 
 -- Target Devices: 
 -- Tool Versions: 
@@ -20,8 +20,7 @@
 
 
 library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-library work;
+use IEEE.STD_LOGIC_1164.ALL; 
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -32,27 +31,15 @@ library work;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity registre_1bit is
-    Port ( input : in STD_LOGIC;
-           output : out STD_LOGIC;
-           clk : in STD_LOGIC;
-           reset : in STD_LOGIC;
-           enable : in STD_LOGIC);
-end registre_1bit;
+entity cmp2bits is
+    Port ( A : in STD_LOGIC;
+           B : in STD_LOGIC;
+           cmp_i : in STD_LOGIC;
+           cmp_o : out STD_LOGIC);
+end cmp2bits;
 
-architecture Behavioral of registre_1bit is
+architecture Behavioral of cmp2bits is
 
 begin
-
-process(CLK, reset)
-begin
-if(reset = '1') then
-    output <= '0';
-elsif(clk'event and clk='1') then
-    if(enable = '1') then
-        output <= input;
-    end if;
-end if;
-end process;
-
+cmp_o <= ((A or not B) and cmp_i) or (A and not B); 
 end Behavioral;

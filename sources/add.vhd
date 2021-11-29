@@ -2,9 +2,9 @@
 -- Company: 
 -- Engineer: 
 -- 
--- Create Date: 11/25/2021 10:54:40 AM
+-- Create Date: 09/24/2021 12:56:27 PM
 -- Design Name: 
--- Module Name: registre_8bits - Behavioral
+-- Module Name: add - Behavioral
 -- Project Name: 
 -- Target Devices: 
 -- Tool Versions: 
@@ -21,7 +21,6 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-library work;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -32,27 +31,18 @@ library work;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity registre_1bit is
-    Port ( input : in STD_LOGIC;
-           output : out STD_LOGIC;
-           clk : in STD_LOGIC;
-           reset : in STD_LOGIC;
-           enable : in STD_LOGIC);
-end registre_1bit;
+entity add is
+    Port ( a : in STD_LOGIC;
+           b : in STD_LOGIC;
+           ci : in std_logic;
+           c0 : out STD_LOGIC;
+           S : out STD_LOGIC);
+end add;
 
-architecture Behavioral of registre_1bit is
+architecture Behavioral of add is
 
 begin
-
-process(CLK, reset)
-begin
-if(reset = '1') then
-    output <= '0';
-elsif(clk'event and clk='1') then
-    if(enable = '1') then
-        output <= input;
-    end if;
-end if;
-end process;
+s <= a xor b xor ci;
+c0 <= (a and b) or(ci and a) or (ci and b); 
 
 end Behavioral;
