@@ -143,28 +143,41 @@ if(reset = '1') then
 elsif(clk = '1' and clk'event) then
     case etat is
         when attente =>
+        --desactiver uart
             reset_uart <= '1';
             start_uart <= '0';
+        --desactiver registre à décalage
             enable_decalage <= '0';
             reset_decalage <= '1';
+        --remettre à zéro le compteur de blocs stocké
             counter_stocker <= (others => '0');
+        --si la switch enable est activé, on commence
             if(enable = '1')then
                 etat <= stocker;
             end if;
+            
         when stocker =>
+        --activer le registre à décalage
             enable_decalage <= '1';
-            counter_envoie <= (others => '0');
             reset_decalage <= '0';
+        --remettre à zéro le compteur de blocs envoyé par uart
+            counter_envoie <= (others => '0');
+        --lorsqu'on a stocké 11250 blocs de 128 bits, on a fini
             if(counter_stocker = (11250-1)) then
                 etat <= envoyer;
             end if;
+            
         when envoyer =>
+        --desactiver le registre à décalage
             enable_decalage <= '0';
             reset_decalage <= '1';
+        --activer le uart
             start_uart <= '1';
+        --lorsqu'on a envoyé 11250 blocs de 128 bits, on a fini
             if(counter_envoie = (11250-1)) then
                 etat <= attente;
             end if;
+            
         when others =>
             etat <= attente;
     end case;
