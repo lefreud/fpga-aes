@@ -32,15 +32,19 @@ use IEEE.STD_LOGIC_1164.ALL;
 --use UNISIM.VComponents.all;
 
 entity mux_2_1 is
-    Port ( ctrl : in STD_LOGIC;
+    Port ( ctrl : in STD_LOGIC_vector(1 downto 0);
            in_value : in STD_LOGIC;
-           in_pos : in STD_LOGIC;
            output : out STD_LOGIC);
 end mux_2_1;
 
 architecture Behavioral of mux_2_1 is
 
 begin
-
+output <= in_value when ctrl = "00" else
+          '0'      when ctrl = "01" else
+          '0'      when ctrl = "10" else 
+          '1'      when ctrl = "11";
+          
+            
 
 end Behavioral;

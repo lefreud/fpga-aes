@@ -26,12 +26,12 @@ use logic_com.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
+use IEEE.NUMERIC_STD.ALL;
 
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
+library UNISIM;
+use UNISIM.VComponents.all;
 
 entity Transmetteur_UART is
     Port ( clk : in STD_LOGIC;
@@ -40,7 +40,7 @@ entity Transmetteur_UART is
            tx : out STD_LOGIC;
            termine : out STD_LOGIC;
            occupe : out STD_LOGIC;
-           datain : in STD_LOGIC_VECTOR (7 downto 0)
+           datain : in STD_LOGIC_VECTOR (127 downto 0)
           );
 end Transmetteur_UART;
 
@@ -74,12 +74,16 @@ signal data_rdy: STD_LOGIC;
 signal enable_rdc: STD_LOGIC;
 signal read : std_logic;
 signal mode :  std_logic;
+signal first_arrival :  std_logic;
 
-signal input_data: STD_LOGIC_VECTOR (7 downto 0);
+signal input_data: STD_LOGIC_VECTOR (127 downto 0);
 
-signal NBRE_COUP_HORLOGE: STD_LOGIC_VECTOR (15 downto 0):=      x"00fa";--"0000010000111101";
+signal NBRE_COUP_HORLOGE: STD_LOGIC_VECTOR (15 downto 0):=      "0000010000111101";--;x"0010";
 --signal HALF_NBRE_COUP_HORLOGE: STD_LOGIC_VECTOR (15 downto 0):= "0000001000011110";
-signal Nbre_bits: STD_LOGIC_VECTOR (15 downto 0):=             x"09c7";-- "0010101001100101";
+signal Nbre_bits: STD_LOGIC_VECTOR (15 downto 0):=             "0010101001100101";--x"0001";
+signal compte : integer:= 0;
+signal ctrl_mux: STD_LOGIC_vector(1 downto 0);
+signal out_tx: std_logic;
 
 begin
 
@@ -99,17 +103,28 @@ compteur_1: entity logic_com.compteur_16bits
     port map(reset => reset_comp_1, clk => clk, enable =>enable_comp_1, output =>out_comp_1 );
     
 registre_dec: entity logic_com.rdc_load_Nbits
-    generic map(N =>8)
+    generic map(N =>128)
     port map(reset =>reset, mode =>mode, load => input_data, input =>'1', output => read, clk=>clk, enable => enable_rdc );
+    
+mux : entity mux_2_1
+port map(ctrl => ctrl_mux,
+           in_value => read,
+           output =>tx);
 
 
 process(reset, start, clk, mode, datain)
 begin
 if(reset = '1') then
     etat_present <= attente;
+    ctrl_mux <= "11";
+    --tx <= out_tx;
+    first_arrival <= '1';
 elsif(rising_edge(clk)) then
     case(etat_present) is
         when attente =>
+            first_arrival <= '1';
+            --tx <= out_tx;
+            ctrl_mux <= "11";
             occupe <='0';
             termine <= '0';
             enable_rdc <= '0';
@@ -122,6 +137,9 @@ elsif(rising_edge(clk)) then
             end if;
         
         when chargement =>
+            first_arrival <= '1';
+            --tx <= out_tx;
+            ctrl_mux <= "11";
             occupe <='0';
             termine <= '0';
             input_data <= datain;
@@ -132,6 +150,9 @@ elsif(rising_edge(clk)) then
             mode <= '0';
             
         when demarrage =>
+            first_arrival <= '1';
+            --tx <= out_tx;
+            ctrl_mux <= "11";
             occupe <='0';
             termine <= '0';
             enable_rdc <= '0';
@@ -141,7 +162,9 @@ elsif(rising_edge(clk)) then
             etat_present <= first_bit;
             
         when first_bit =>
-            tx <= '0';
+            first_arrival <= '1';
+            ctrl_mux <= "10";
+            --tx <= '0';
             reset_comp_0 <= '0';
             reset_comp_1 <= '1';
             if( cmp_0 = '1') then
@@ -156,29 +179,39 @@ elsif(rising_edge(clk)) then
             
             
         when send_bit =>
+            ctrl_mux <= "00";
+--            if(first_arrival = '1') then
+--                enable_rdc <= '1';
+--                first_arrival <= '0';
+--            elsif(first_arrival = '0') then 
+--                enable_rdc <= '0';
+--            end if;
             reset_comp_1 <= '0';
             reset_comp_0 <= '0';
             occupe <='1';
             termine <= '0';
             enable_rdc <= '0';
-            tx<= read;
-            if(cmp_1 = '1') then
+            --tx<= out_tx;
+            if(compte = 128) then
                 etat_present <= end_bit;
+                compte <= 0;
                 --enable_rdc <= '1';
-            elsif( cmp_1 = '0') then
+            else
                 if(cmp_0 = '0') then
                     etat_present <= send_bit;
                 elsif(cmp_0 = '1') then
                     etat_present <= send_bit;
                     enable_rdc <= '1';
                     reset_comp_0 <= '1';
+                    compte <= compte +1;
                 end if;
             end if;
             
             
         
         when end_bit =>
-            tx <= '1';
+            ctrl_mux <= "11";
+            --tx <= '1';
             reset_comp_0 <= '0';
             reset_comp_1 <= '1';
             if( cmp_0 = '1') then
@@ -189,9 +222,10 @@ elsif(rising_edge(clk)) then
                 etat_present <= end_bit;
             end if;
             occupe <='1';
-            termine <= '0';
+            termine <= '1';
         
         when end_all =>
+            ctrl_mux <= "11";
             occupe <='0';
             termine <= '1';
             enable_rdc <= '0';
