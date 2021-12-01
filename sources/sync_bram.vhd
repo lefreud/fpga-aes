@@ -16,7 +16,7 @@ signal ram : ram_type;
 
 begin
 
-Process(write_clk, enable, write_enable, addr_write, write_data)
+Process(write_clk, write_enable, addr_write, write_data)
 begin
     if write_clk'event AND write_clk = '1' then
         if write_enable = '1' then

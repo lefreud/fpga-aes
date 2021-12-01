@@ -35,6 +35,7 @@ library work;
 entity AES_CTR is
     Port ( input : in STD_LOGIC_VECTOR (127 downto 0);
            CLK: in STD_LOGIC;
+           enable: in STD_LOGIC;
            data_ready_in: in STD_LOGIC;
            reset:in STD_LOGIC;
            key : in STD_LOGIC_VECTOR (127 downto 0);
@@ -48,6 +49,7 @@ component AES_BLOCK is
     Port ( Data_INPUT : in STD_LOGIC_VECTOR (127 downto 0);
            Key : in STD_LOGIC_VECTOR (127 downto 0);
            Data_ready_in : in STD_LOGIC;
+           enable : in STD_LOGIC;
            CLK : in STD_LOGIC;
            RESET : in STD_LOGIC;
            Data_ready_out : out STD_LOGIC;
@@ -66,6 +68,7 @@ aes_input <= counter & nonce;
 aes_block0: AES_BLOCK port map (Data_ready_in =>data_ready_in, 
                                Data_INPUT => aes_input, 
                                Key =>key, 
+                               enable => enable,
                                Data_ready_out=>data_ready_out, 
                                Data_OUTPUT=>aes_output, 
                                CLK=>CLK, 

@@ -38,7 +38,7 @@ entity tx_slave_fsm is
            bram_read_data: in STD_LOGIC_VECTOR (127 downto 0);
            reset : in STD_LOGIC;
            adresse_read_bram: out STD_LOGIC_VECTOR (13 downto 0):="00000000000000";
-           state_attente: out STD_LOGIC;
+           termine: out STD_LOGIC;
            tx_uart:out STD_LOGIC);
            
 end tx_slave_fsm;
@@ -55,7 +55,7 @@ component Transmetteur_UART is
            datain : in STD_LOGIC_VECTOR (127 downto 0));
 end component;
 
-type type_etat is (attente, envoyer);
+type type_etat is (attente, envoyer, fin);
 signal etat: type_etat;
 
 signal counter_envoie:STD_LOGIC_VECTOR (13 downto 0):= (others => '0');
@@ -81,8 +81,7 @@ if(reset = '1') then
 elsif(clk_uart = '1' and clk_uart'event) then
     case etat is
         when attente =>
-        --dire au master de changer d'état
-            state_attente <= '1';
+            termine <= '0';
         --desactiver uart
             reset_uart <= '1';
             start_uart <= '0';
@@ -92,13 +91,18 @@ elsif(clk_uart = '1' and clk_uart'event) then
             end if;
             
         when envoyer =>
+            termine <= '0';
         --activer le uart
             start_uart <= '1';
             reset_uart <= '0';
         --lorsqu'on a envoyé 11250 blocs de 128 bits, on a fini
             if(counter_envoie = (11250-1)) then
-                etat <= attente;
+                etat <= fin;
             end if;
+        when fin =>
+        --dire au master de changer d'état
+            termine <= '1';
+            etat <= attente;
             
         when others =>
             etat <= attente;

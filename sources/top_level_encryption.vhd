@@ -57,6 +57,8 @@ end component;
 component AES_CTR is
     Port ( input : in STD_LOGIC_VECTOR (127 downto 0);
            CLK: in STD_LOGIC;
+           RESET : in STD_LOGIC;
+           enable:in STD_LOGIC;
            data_ready_in: in STD_LOGIC;
            key : in STD_LOGIC_VECTOR (127 downto 0);
            data_ready_out: out STD_LOGIC;
@@ -76,7 +78,15 @@ component tx_slave_fsm is
            bram_read_data: in STD_LOGIC_VECTOR (127 downto 0);
            reset : in STD_LOGIC;
            adresse_read_bram: out STD_LOGIC_VECTOR (13 downto 0);
-           state_attente: out STD_LOGIC);
+           tx_uart : out STD_LOGIC;
+           termine: out STD_LOGIC);
+end component;
+
+component compteur_stocker is
+    Port ( clk : in STD_LOGIC;
+           count : out STD_LOGIC_VECTOR (13 downto 0);
+           enable : in STD_LOGIC;
+           reset : in STD_LOGIC);
 end component;
 
 signal key: STD_LOGIC_VECTOR (127 downto 0):= x"55555555555555555555555555555555";
@@ -87,12 +97,13 @@ signal data_out_decalage_red: STD_LOGIC_VECTOR (127 downto 0);
 signal data_ready_in_ctr_red: STD_LOGIC;
 signal data_ready_out_ctr_red: STD_LOGIC;
 signal data_encrypte_red: STD_LOGIC_VECTOR (127 downto 0);
+signal ctr_enable: STD_LOGIC:='1';
 
 type type_etat is (attente, stocker, envoyer);
 signal etat: type_etat:= attente;
 
-signal counter_stocker: STD_LOGIC_VECTOR (13 downto 0):= (others => '0');
-
+signal count_stocker: STD_LOGIC_VECTOR (13 downto 0);
+signal reset_counter: STD_LOGIC;
 
 signal bram_read_data:STD_LOGIC_VECTOR (127 downto 0);
 
@@ -112,6 +123,8 @@ reg_decalage_red: registre_decalage port map (data_in => data_in(23),
 aes_red: aes_ctr port map(input =>data_out_decalage_red,
                           clk=>clk, 
                           data_ready_in =>data_ready_in_ctr_red, 
+                          reset => reset,
+                          enable => ctr_enable,
                           key =>key, 
                           data_ready_out =>data_ready_out_ctr_red, 
                           output =>data_encrypte_red);
@@ -120,7 +133,7 @@ aes_red: aes_ctr port map(input =>data_out_decalage_red,
 bram: sync_bram port map( read_clk => clk_uart,
                           write_clk => clk, 
                           write_enable => data_ready_out_ctr_red,
-                          addr_write => counter_stocker, 
+                          addr_write => count_stocker, 
                           addr_read => adresse_read,
                           write_data => data_encrypte_red,
                           read_data=> bram_read_data);
@@ -130,8 +143,13 @@ fsm_slave: tx_slave_fsm port map (  clk_uart => clk_uart,
                                     bram_read_data => bram_read_data,
                                     reset => slave_reset,
                                     adresse_read_bram => adresse_read,
-                                    state_attente=> slave_ended);
-            
+                                    tx_uart => data_uart,
+                                    termine=> slave_ended);
+                                    
+compteur: compteur_stocker port map (clk => clk,
+                                     count => count_stocker,
+                                     enable =>data_ready_out_ctr_red,
+                                     reset =>reset_counter);
 process(CLK, reset)
 begin
 if(reset = '1') then
@@ -139,28 +157,38 @@ if(reset = '1') then
 elsif(clk = '1' and clk'event) then
     case etat is
         when attente =>
+        --desactiver l'encryption
+            ctr_enable <= '0';
+        --desactiver le slave
+            slave_start <= '0';
         --desactiver registre à décalage
             enable_decalage <= '0';
             reset_decalage <= '1';
         --remettre à zéro le compteur de blocs stocké
-            counter_stocker <= (others => '0');
+            reset_counter <= '1';
         --si la switch enable est activé, on commence
             if(enable = '1')then
                 etat <= stocker;
             end if;
             
         when stocker =>
+        --activer l'encryption
+            ctr_enable <= '1';
+        --activer le compteur
+            reset_counter <= '0';
         --activer le registre à décalage
             enable_decalage <= '1';
             reset_decalage <= '0';
         --lorsqu'on a stocké 11250 blocs de 128 bits, on a fini
-            if(counter_stocker = (11250-1)) then
+            if(count_stocker = (11250-1)) then
                 etat <= envoyer;
             end if;
             
         when envoyer =>
+        --desactiver l'encryption
+            ctr_enable <= '0';
         --activer le slave
-        
+            slave_start <= '1';
         --desactiver le registre à décalage
             enable_decalage <= '0';
             reset_decalage <= '1';
@@ -174,17 +202,6 @@ elsif(clk = '1' and clk'event) then
     end case;
 end if;
 end process;
-
-process(clk)
-begin
-    if(clk='1' and clk'event) then
-        if(data_ready_out_ctr_red = '1') then
-            counter_stocker <= counter_stocker + 1;
-        end if;
-    end if;
-end process;
-
-
 
 end Behavioral;
 
