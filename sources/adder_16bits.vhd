@@ -21,8 +21,8 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-library logic_com;
-use logic_com.ALL;
+library work;
+use work.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -49,11 +49,11 @@ begin
 
 adder : for i in 0 to 15 generate
     first_add: if (i = 0) generate
-        add_0: entity logic_com.add
+        add_0: entity add
             port map(a=> A(0), b=> B(0), s=>sw(0), ci => '0', c0=>se(0));
         end generate;
     other_add: if (i>0) generate
-        add_i: entity logic_com.add
+        add_i: entity add
                 port map(a=> A(i), b=> B(i), s=>sw(i), ci => si(i-1), c0=>se(i));
             end generate;
 end generate;

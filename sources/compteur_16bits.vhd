@@ -21,8 +21,8 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-library logic_com;
-use logic_com.ALL;
+library work;
+use work.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -53,11 +53,11 @@ signal s_b: std_logic_vector(15 downto 0) := (0 => '1',others => '0');
 begin
 
 registre : for i in 0 to 15 generate
-    reg_i : entity Logic_com.registre_1
+    reg_i : entity registre_1
         port map(rst => reset, en=> enable, clk=>clk, d=> sin(i), q=>sout(i));
 end generate;
 
-adder_16 : entity Logic_com.adder_16bits
+adder_16 : entity adder_16bits
 port map(A => SEN, B=>s_B, output=>sin);
 
 

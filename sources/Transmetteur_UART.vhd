@@ -21,8 +21,8 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-library logic_com;
-use logic_com.ALL;
+library work;
+use work.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -48,7 +48,7 @@ end Transmetteur_UART;
 
 architecture Behavioral of Transmetteur_UART is
 type etat is (attente, chargement, demarrage ,first_bit,  send_bit, end_bit, end_all);
-signal etat_present : etat;
+signal etat_present : etat:=attente;
 signal data_buffer: std_logic_vector(7 downto 0);
 
 --signal enable_reg_dec: std_logic;
@@ -87,22 +87,22 @@ signal out_tx: std_logic;
 
 begin
 
-comparateur_0: entity logic_com.cmp_16bits
+comparateur_0: entity cmp_16bits
     port map(a => out_comp_0, b => NBRE_COUP_HORLOGE, cmp => cmp_0);
 
 --comparateur_1: entity logic_com.cmp_16bits
  --   port map(a => out_comp_0, b => HALF_NBRE_COUP_HORLOGE,cmp => cmp_1);
 
-comparateur_1: entity logic_com.cmp_16bits
+comparateur_1: entity cmp_16bits
     port map(a => out_comp_1, b => Nbre_bits, cmp => cmp_1);
     
-compteur_0: entity logic_com.compteur_16bits
+compteur_0: entity compteur_16bits
     port map(reset => reset_comp_0, clk => clk, enable =>enable_comp_0, output =>out_comp_0 );
 
-compteur_1: entity logic_com.compteur_16bits
+compteur_1: entity compteur_16bits
     port map(reset => reset_comp_1, clk => clk, enable =>enable_comp_1, output =>out_comp_1 );
     
-registre_dec: entity logic_com.rdc_load_Nbits
+registre_dec: entity rdc_load_Nbits
     generic map(N =>128)
     port map(reset =>reset, mode =>mode, load => input_data, input =>'1', output => read, clk=>clk, enable => enable_rdc );
     
@@ -222,8 +222,7 @@ elsif(rising_edge(clk)) then
                 etat_present <= end_bit;
             end if;
             occupe <='1';
-            termine <= '1';
-        
+            termine <= '0';
         when end_all =>
             ctrl_mux <= "11";
             occupe <='0';
@@ -232,7 +231,6 @@ elsif(rising_edge(clk)) then
             reset_comp_0 <= '1';
             reset_comp_1 <= '1';
             occupe <='0';
-            termine <= '1';
             etat_present <= attente;
     end case;
 end if;

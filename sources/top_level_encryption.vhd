@@ -70,14 +70,13 @@ component sync_bram is
           read_data : out std_logic_vector(127 downto 0)); -- Blocks of 128 bits
 end component; 
 
-component Transmetteur_UART is
-    Port ( clk : in STD_LOGIC;
+component tx_slave_fsm is
+    Port ( clk_uart : in STD_LOGIC;
            start : in STD_LOGIC;
+           bram_read_data: in STD_LOGIC_VECTOR (127 downto 0);
            reset : in STD_LOGIC;
-           tx : out STD_LOGIC;
-           termine : out STD_LOGIC;
-           occupe : out STD_LOGIC;
-           datain : in STD_LOGIC_VECTOR (127 downto 0));
+           adresse_read_bram: out STD_LOGIC_VECTOR (13 downto 0);
+           state_attente: out STD_LOGIC);
 end component;
 
 signal key: STD_LOGIC_VECTOR (127 downto 0):= x"55555555555555555555555555555555";
@@ -93,21 +92,21 @@ type type_etat is (attente, stocker, envoyer);
 signal etat: type_etat:= attente;
 
 signal counter_stocker: STD_LOGIC_VECTOR (13 downto 0):= (others => '0');
-signal counter_envoie: STD_LOGIC_VECTOR (13 downto 0):= (others => '0');
+
 
 signal bram_read_data:STD_LOGIC_VECTOR (127 downto 0);
 
-signal start_uart:STD_LOGIC;
-signal reset_uart:STD_LOGIC;
-signal termine_uart:STD_LOGIC;
-signal occupe_uart:STD_LOGIC;
+signal slave_start: STD_LOGIC;
+signal slave_ended: STD_LOGIC;
+signal slave_reset: STD_LOGIC;
+signal adresse_read: STD_LOGIC_VECTOR (13 downto 0):= (others => '0');
 
 begin
 reg_decalage_red: registre_decalage port map (data_in => data_in(23),
                                               data_out => data_out_decalage_red,
                                               data_ready_out =>data_ready_in_ctr_red,
                                               CLK => CLK, 
-                                              enable => '1',
+                                              enable => enable_decalage,
                                               reset => reset_decalage);
                                           
 aes_red: aes_ctr port map(input =>data_out_decalage_red,
@@ -122,17 +121,16 @@ bram: sync_bram port map( read_clk => clk_uart,
                           write_clk => clk, 
                           write_enable => data_ready_out_ctr_red,
                           addr_write => counter_stocker, 
-                          addr_read => counter_envoie,
+                          addr_read => adresse_read,
                           write_data => data_encrypte_red,
                           read_data=> bram_read_data);
                           
-uart: transmetteur_uart port map( clk => clk_uart,
-                                  start => start_uart,
-                                  reset => reset_uart,
-                                  tx => data_uart,
-                                  termine => termine_uart,
-                                  occupe => occupe_uart,
-                                  datain => bram_read_data);
+fsm_slave: tx_slave_fsm port map (  clk_uart => clk_uart,
+                                    start => slave_start,
+                                    bram_read_data => bram_read_data,
+                                    reset => slave_reset,
+                                    adresse_read_bram => adresse_read,
+                                    state_attente=> slave_ended);
             
 process(CLK, reset)
 begin
@@ -141,9 +139,6 @@ if(reset = '1') then
 elsif(clk = '1' and clk'event) then
     case etat is
         when attente =>
-        --desactiver uart
-            reset_uart <= '1';
-            start_uart <= '0';
         --desactiver registre à décalage
             enable_decalage <= '0';
             reset_decalage <= '1';
@@ -158,21 +153,19 @@ elsif(clk = '1' and clk'event) then
         --activer le registre à décalage
             enable_decalage <= '1';
             reset_decalage <= '0';
-        --remettre à zéro le compteur de blocs envoyé par uart
-            counter_envoie <= (others => '0');
         --lorsqu'on a stocké 11250 blocs de 128 bits, on a fini
             if(counter_stocker = (11250-1)) then
                 etat <= envoyer;
             end if;
             
         when envoyer =>
+        --activer le slave
+        
         --desactiver le registre à décalage
             enable_decalage <= '0';
             reset_decalage <= '1';
-        --activer le uart
-            start_uart <= '1';
-        --lorsqu'on a envoyé 11250 blocs de 128 bits, on a fini
-            if(counter_envoie = (11250-1)) then
+        --lorsque le slave a fini
+            if(slave_ended = '1') then
                 etat <= attente;
             end if;
             
@@ -192,13 +185,6 @@ begin
 end process;
 
 
-process(clk_uart)
-begin
-    if(clk_uart='1' and clk_uart'event) then
-        if(termine_uart = '1') then
-            counter_envoie <= counter_envoie + 1;
-        end if;
-    end if;
-end process;
+
 end Behavioral;
 

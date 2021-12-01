@@ -22,8 +22,8 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use ieee.numeric_std.all;
-library logic_com;
-use logic_com.ALL;
+library work;
+use work.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -52,7 +52,7 @@ begin
 s_out(0) <= a(0) or not b(0);
 
 comparator: for i in 1 to 15 generate
-  Comp_0: entity logic_com.cmp2bits
+  Comp_0: entity cmp2bits
     port map(a=> A(i),b=> b(i), cmp_i=> s_out(i-1),cmp_o=> s_out(i));
 end generate;
     
