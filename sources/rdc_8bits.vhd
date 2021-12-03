@@ -24,6 +24,8 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 library Logic_com;
 use Logic_com.ALL;
+library work;
+use work.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -35,6 +37,7 @@ use Logic_com.ALL;
 --use UNISIM.VComponents.all;
 
 entity Reg_8bits is
+generic (N :integer:=128);
     Port ( reset : in STD_LOGIC;
            datain : in STD_LOGIC;
            dataout : out std_logic_vector(7 downto 0);
@@ -43,44 +46,24 @@ entity Reg_8bits is
 end Reg_8bits;
 
 architecture Behavioral of Reg_8bits is
-signal sin: std_logic_vector(7 downto 0) := (others => '0');
-signal sout: std_logic_vector(7 downto 0) := (others => '0');
+--signal sin: std_logic_vector(N-1 downto 0) := (others => '0');
+signal sout: std_logic_vector(N-1 downto 0) := (others => '0');
 
 
 begin
-reg_0 : entity Logic_com.registre_1 
-port map(rst => reset, en=> enable, clk=>clk, d=> sin(0), q=>sout(0));
 
-reg_1 : entity Logic_com.registre_1
-port map(rst => reset, en=> enable, clk=>clk, d=> sin(1), q=>sout(1));
 
-reg_2 : entity Logic_com.registre_1
-port map(rst => reset, en=> enable, clk=>clk, d=> sin(2), q=>sout(2));
+reg_N : for i in 0 to N-1 generate
+ reg_1: if i = 0 generate
+    reg: entity registre_1 
+     port map(rst => reset, en=> enable, clk=>clk, d=> datain, q=>sout(0));
+ end generate reg_1;
+ reg_autre: if i>0 generate
+    reg_i: entity registre_1
+    port map(rst => reset, en=> enable, clk=>clk, d=> sout(i-1), q=>sout(i));
+ end generate reg_autre;
+ end generate;
 
-reg_3 : entity Logic_com.registre_1
-port map(rst => reset, en=> enable, clk=>clk, d=> sin(3), q=>sout(3));
-
-reg_4 : entity Logic_com.registre_1
-port map(rst => reset, en=> enable, clk=>clk, d=> sin(4), q=>sout(4));
-
-reg_5 : entity Logic_com.registre_1
-port map(rst => reset, en=> enable, clk=>clk, d=> sin(5), q=>sout(5));
-
-reg_6 : entity Logic_com.registre_1
-port map(rst => reset, en=> enable, clk=>clk, d=> sin(6), q=>sout(6));
-
-reg_7 : entity Logic_com.registre_1
-port map(rst => reset, en=> enable, clk=>clk, d=> sin(7), q=>sout(7));
-
-sin(0) <= datain;
-
-sin(1) <= sout(0);
-sin(2) <= sout(1);
-sin(3) <= sout(2);
-sin(4) <= sout(3);
-sin(5) <= sout(4);
-sin(6) <= sout(5);
-sin(7) <= sout(6);
 
 dataout <= sout;
 
