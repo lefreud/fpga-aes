@@ -21,8 +21,11 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+library logic_com;
+use logic_com.ALL;
 library work;
 use work.ALL;
+
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values

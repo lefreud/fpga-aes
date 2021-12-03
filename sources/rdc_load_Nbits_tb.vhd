@@ -23,6 +23,9 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 library logic_com;
 use logic_com.All;
+library work;
+use work.ALL;
+
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -49,7 +52,7 @@ signal LOAD : STD_LOGIC_VECTOR (N-1 downto 0);
 signal OUTPUT : STD_LOGIC;
 
 begin
-rdc_load_Nbits : entity logic_com.rdc_load_Nbits
+rdc_load_Nbits : entity rdc_load_Nbits
     generic map(N => 10)
     port map ( RESET => RESET,
                CLK => CLK,
