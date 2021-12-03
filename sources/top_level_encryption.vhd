@@ -157,6 +157,7 @@ if(reset = '1') then
 elsif(clk = '1' and clk'event) then
     case etat is
         when attente =>
+            slave_reset <= '1';
         --desactiver l'encryption
             ctr_enable <= '0';
         --desactiver le slave
@@ -172,6 +173,7 @@ elsif(clk = '1' and clk'event) then
             end if;
             
         when stocker =>
+            slave_reset <= '1';
         --activer l'encryption
             ctr_enable <= '1';
         --activer le compteur
@@ -185,6 +187,7 @@ elsif(clk = '1' and clk'event) then
             end if;
             
         when envoyer =>
+            slave_reset <= '0';
         --desactiver l'encryption
             ctr_enable <= '0';
         --activer le slave
