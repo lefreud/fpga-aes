@@ -52,7 +52,7 @@ end component;
 
 
 component rx_slave_fsm is
- Port ( clk_uart : in STD_LOGIC;
+ Port (   clk_uart : in STD_LOGIC;
           bram_write_data: out STD_LOGIC_VECTOR (127 downto 0);
           reset : in STD_LOGIC;
           adresse_write_bram: out STD_LOGIC_VECTOR (13 downto 0);
@@ -92,6 +92,7 @@ end component;
 
 
 type type_etat is (attente,recevoir, decoder, envoi);
+
 signal etat: type_etat:= attente;
 
 signal reset_uart: std_logic;
@@ -125,6 +126,9 @@ signal rx_termine : std_logic;
 signal key: STD_LOGIC_VECTOR (127 downto 0):= x"55555555555555555555555555555555";
 
 begin
+
+-- rx_fsm : rx_slave_fsm port map ( clk_uart => clk,
+--                                 bram_read_data => 
 
 bram: sync_bram port map( read_clk => clk,
                           write_clk => clk, 
