@@ -35,7 +35,9 @@ entity Top_level_decode is
 Port ( clk : in STD_LOGIC;
        clk_uart: in STD_LOGIC;
        reset : in STD_LOGIC;
-       rx_uart : in STD_LOGIC);
+       rx_uart : in STD_LOGIC;
+       data_out : out std_logic_vector(23 downto 0);
+       pVDE: out STD_LOGIC);
 end Top_level_decode;
 
 architecture Behavioral of Top_level_decode is
@@ -45,24 +47,29 @@ component sync_bram is
           addr_write, addr_read : in std_logic_vector(13 downto 0); -- 11250 blocks so 14 bits for the address
           write_data : in std_logic_vector(127 downto 0); -- Blocks of 128 bits
           read_data : out std_logic_vector(127 downto 0)); -- Blocks of 128 bits
-end component; 
-
-component compteur_stocker is
-    Port ( clk : in STD_LOGIC;
-           count : out STD_LOGIC_VECTOR (13 downto 0);
-           enable : in STD_LOGIC;
-           reset : in STD_LOGIC);
 end component;
-
-signal key: STD_LOGIC_VECTOR (127 downto 0):= x"55555555555555555555555555555555";
 
 type type_etat is (attente, stocker, afficher);
 signal etat: type_etat:= attente;
 
-signal count_stocker: STD_LOGIC_VECTOR (13 downto 0);
-signal reset_counter: STD_LOGIC;
+signal uart_out : std_logic_vector(127 downto 0);
+signal uart_data_ready : std_logic;
+signal rx_addr_write, rx_addr_read : std_logic_vector(13 downto 0) := "00000000000001";
+signal rx_write_enable : std_logic;
+signal uart_rx_write_data : STD_LOGIC_VECTOR (127 downto 0);
+signal bram_read_data : STD_LOGIC_VECTOR (127 downto 0);
+signal rx_termine : std_logic;
+signal key: STD_LOGIC_VECTOR (127 downto 0):= x"55555555555555555555555555555555";
+
 begin
 
+bram: sync_bram port map( read_clk => clk,
+                          write_clk => clk, 
+                          write_enable => rx_write_enable,
+                          addr_write => rx_addr_write, 
+                          addr_read => rx_addr_read,
+                          write_data => uart_rx_write_data,
+                          read_data=> bram_read_data);
 
 process(CLK, reset)
 begin
@@ -71,14 +78,12 @@ if(reset = '1') then
 elsif(clk = '1' and clk'event) then
     case etat is
         when attente =>
-            
-        
-        
-        when stocker => 
-        
         
         
         when afficher =>
+        
+        
+        when others =>
     
     
     end case;
