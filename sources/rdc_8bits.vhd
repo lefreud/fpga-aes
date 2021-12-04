@@ -40,7 +40,7 @@ entity Reg_8bits is
 generic (N :integer:=128);
     Port ( reset : in STD_LOGIC;
            datain : in STD_LOGIC;
-           dataout : out std_logic_vector(7 downto 0);
+           dataout : out std_logic_vector(N-1 downto 0);
            clk : in STD_LOGIC;
            enable : in STD_LOGIC);
 end Reg_8bits;
