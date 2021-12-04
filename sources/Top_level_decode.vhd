@@ -49,6 +49,15 @@ component sync_bram is
           read_data : out std_logic_vector(127 downto 0)); -- Blocks of 128 bits
 end component;
 
+component rx_slave_fsm is
+ Port (   clk_uart : in STD_LOGIC;
+          bram_write_data: out STD_LOGIC_VECTOR (127 downto 0);
+          reset : in STD_LOGIC;
+          adresse_write_bram: out STD_LOGIC_VECTOR (13 downto 0);
+          data_rdy, write_enable_bram: out STD_LOGIC;
+          rx_uart:in STD_LOGIC);
+end component;
+
 type type_etat is (attente, stocker, afficher);
 signal etat: type_etat:= attente;
 
@@ -62,6 +71,9 @@ signal rx_termine : std_logic;
 signal key: STD_LOGIC_VECTOR (127 downto 0):= x"55555555555555555555555555555555";
 
 begin
+
+-- rx_fsm : rx_slave_fsm port map ( clk_uart => clk,
+--                                 bram_read_data => 
 
 bram: sync_bram port map( read_clk => clk,
                           write_clk => clk, 
