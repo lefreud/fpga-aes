@@ -91,7 +91,7 @@ component rdc_load_Nbits is
 end component;
 
 
-type type_etat is (attente,recevoir, decoder, envoi);
+type type_etat is (attente,recevoir, decoder, envoi, fin);
 
 signal etat: type_etat:= attente;
 
@@ -155,13 +155,13 @@ aes : aes_ctr port map (input => ctr_input,
                            data_ready_out=> data_rdy_out_ctr,
                            output => ctr_output);
                            
-compteur: compteur_stocker port map(clk => clk,
-                                    count => count,
-                                    enable => enable_count,
-                                    reset => reset_count);
+--compteur: compteur_stocker port map(clk => clk,
+--                                    count => count,
+--                                    enable => enable_count,
+--                                    reset => reset_count);
 
 
-registre : rdc_load_Nbits port map(RESET => reset_ctr,
+registre : rdc_load_Nbits port map(RESET => reset_res,
            CLK => clk,
            ENABLE => enable_res,
            MODE => mode_res,
@@ -170,7 +170,7 @@ registre : rdc_load_Nbits port map(RESET => reset_ctr,
            OUTPUT => pixel_bit);
 
 
-process(CLK, reset, rx_uart)
+process(CLK, reset)
 begin
 if(reset = '1') then
     etat <= attente;
@@ -181,7 +181,7 @@ elsif(clk = '1' and clk'event) then
             
             reset_uart <= '1';
             
-            reset_count <= '1';
+            --reset_count <= '1';
             reset_res <= '1';
             
             pvde <='0';
@@ -191,7 +191,7 @@ elsif(clk = '1' and clk'event) then
         when recevoir =>
             pvde <='0';
             reset_uart <= '0';
-            reset_count <= '1';
+           -- reset_count <= '1';
             reset_ctr <= '1';
             if (fsm_finished = '1') then
                 etat <= decoder; 
@@ -205,13 +205,16 @@ elsif(clk = '1' and clk'event) then
             reset_count <= '0';
             reset_ctr <= '0';
             reset_res <= '0';
-            enable_count <='0';
-            enable_res <='1';
+            enable_count <='1';
+            enable_res <='0';
             enable_ctr <='0';
             mode_res <= '1';
             data_rdy_in_ctr <= '1';
-            if(data_rdy_out_ctr = '1') then 
+            if( rx_addr_read = 11250) then
+                etat <= fin;
+            elsif(data_rdy_out_ctr = '1') then 
                 etat <= envoi;
+                data_rdy_in_ctr <= '0';
                 rx_addr_read <= rx_addr_read +1 ;
                 enable_ctr <= '1';
             else
@@ -221,20 +224,27 @@ elsif(clk = '1' and clk'event) then
         
         
         when envoi =>
+        -- uart inactif
             reset_uart <= '1';
+            
+        --compteur actif mais ne compte pas
             reset_count <= '0';
-            reset_ctr <= '0';
-            reset_res <= '0';
             enable_count <='0';
-            enable_res <='1';
+            -- le ctr reste actif mais pas en marche
             enable_ctr <='0';
+            reset_ctr <= '0';
+            --on active le registre 
+            reset_res <= '0';
+            enable_res <='1';
+           
             pvde <='1';
+            --envoi bit par bit 
             mode_res <= '0';
-            reset_ctr <= '1';
+            reset_ctr <= '0';
                     
             reset_uart <= '1';
             
-            reset_count <= '1';
+            --reset_count <= '';
             reset_res <= '1';
             if(compte = 127) then
                 etat <= decoder;
@@ -246,6 +256,7 @@ elsif(clk = '1' and clk'event) then
             
         
         when others =>
+        etat <= attente;
     
     
     end case;
