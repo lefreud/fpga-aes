@@ -37,7 +37,7 @@ use work.ALL;
 
 entity UART is
     Port ( RX : in STD_LOGIC;
-           DATA_OUT : out STD_LOGIC_VECTOR (1277 downto 0);
+           DATA_OUT : out STD_LOGIC_VECTOR (127 downto 0);
            RESET : in STD_LOGIC;
            data_rdy : out STD_LOGIC;
            clk : in STD_LOGIC);
