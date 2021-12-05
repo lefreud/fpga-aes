@@ -82,6 +82,7 @@ elsif(clk_uart = '1' and clk_uart'event) then
         
         --aucun acces à la bram
         write_enable_bram <= '0';
+        counter_envoie <= "00000000000000";
         
         when reception =>
         --on active le uart 

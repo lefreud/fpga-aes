@@ -37,6 +37,12 @@ Port ( clk : in STD_LOGIC;
        reset : in STD_LOGIC;
        rx_uart : in STD_LOGIC;
        pixel_bit: out std_logic;
+       -- ready_out: out std_logic;
+       state_debug_0 : out std_logic;
+       state_debug_1 : out std_logic;
+       state_debug_2 : out std_logic;
+       state_debug_3 : out std_logic;
+       
        --data_out : out std_logic_vector(23 downto 0);
        pVDE: out STD_LOGIC);
 end Top_level_decode;
@@ -103,10 +109,6 @@ signal data_rdy_out_ctr: std_logic;
 signal ctr_input: STD_LOGIC_VECTOR (127 downto 0);
 signal ctr_output: STD_LOGIC_VECTOR (127 downto 0);
 
-signal count: STD_LOGIC_VECTOR (13 downto 0);
-signal enable_count: std_logic := '1';
-signal reset_count : std_logic;
-
 signal reset_res: std_logic;
 signal mode_res: std_logic;
 signal enable_res: std_logic :='1';
@@ -122,7 +124,6 @@ signal rx_addr_read : std_logic_vector(13 downto 0):= "00000000000000";
 signal rx_write_enable : std_logic;
 signal uart_rx_write_data : STD_LOGIC_VECTOR (127 downto 0);
 signal bram_read_data : STD_LOGIC_VECTOR (127 downto 0);
-signal rx_termine : std_logic;
 signal key: STD_LOGIC_VECTOR (127 downto 0):= x"55555555555555555555555555555555";
 
 begin
@@ -177,6 +178,15 @@ if(reset = '1') then
 elsif(clk = '1' and clk'event) then
     case etat is
         when attente =>
+                reset_uart <= '1';
+                reset_ctr <= '1';
+                enable_ctr <= '0';
+                data_rdy_in_ctr <= '0';
+                
+                reset_res <= '1';
+                mode_res <= '0';
+                enable_res <= '0';
+                    
             reset_ctr <= '1';
             
             reset_uart <= '1';
@@ -184,8 +194,15 @@ elsif(clk = '1' and clk'event) then
             --reset_count <= '1';
             reset_res <= '1';
             
+            rx_addr_read <= (others => '0');
+            compte <= 0;
+            data_rdy_in_ctr <= '0';
             pvde <='0';
             etat <= recevoir;
+            state_debug_0 <= '1';
+            state_debug_1 <= '0';
+            state_debug_2 <= '0';
+            state_debug_3 <= '0';
             
             
         when recevoir =>
@@ -198,38 +215,40 @@ elsif(clk = '1' and clk'event) then
             else 
                 etat <= recevoir;
             end if;
+            state_debug_0 <= '0';
+            state_debug_1 <= '1';
+            state_debug_2 <= '0';
+            state_debug_3 <= '0';
         
         when decoder =>
             pvde <='0';
             reset_uart <= '1';
-            reset_count <= '0';
             reset_ctr <= '0';
             reset_res <= '0';
-            enable_count <='1';
             enable_res <='0';
-            enable_ctr <='0';
-            mode_res <= '1';
+            enable_ctr <='1';
+            mode_res <= '0';
             data_rdy_in_ctr <= '1';
             if( rx_addr_read = 11250) then
-                etat <= fin;
+                etat <= attente;
             elsif(data_rdy_out_ctr = '1') then 
                 etat <= envoi;
                 data_rdy_in_ctr <= '0';
                 rx_addr_read <= rx_addr_read +1 ;
-                enable_ctr <= '1';
+                enable_ctr <= '0';
             else
                 etat <= decoder;
             end if;
             
-        
+            state_debug_0 <= '0';
+            state_debug_1 <= '0';
+            state_debug_2 <= '1';
+            state_debug_3 <= '0';
         
         when envoi =>
         -- uart inactif
             reset_uart <= '1';
             
-        --compteur actif mais ne compte pas
-            reset_count <= '0';
-            enable_count <='0';
             -- le ctr reste actif mais pas en marche
             enable_ctr <='0';
             reset_ctr <= '0';
@@ -239,8 +258,7 @@ elsif(clk = '1' and clk'event) then
            
             pvde <='1';
             --envoi bit par bit 
-            mode_res <= '0';
-            reset_ctr <= '0';
+            mode_res <= '1';
                     
             reset_uart <= '1';
             
@@ -253,8 +271,11 @@ elsif(clk = '1' and clk'event) then
                 etat <= envoi; 
                 compte <= compte + 1;
             end if;
-            
-        
+
+            state_debug_0 <= '0';
+            state_debug_1 <= '0';
+            state_debug_2 <= '0';
+            state_debug_3 <= '1';
         when others =>
         etat <= attente;
     
