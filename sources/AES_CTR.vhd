@@ -63,7 +63,7 @@ signal aes_input: STD_LOGIC_VECTOR (127 downto 0);
 
 begin
 
-aes_input <= counter & nonce;
+aes_input <= nonce & counter;
 
 aes_block0: AES_BLOCK port map (Data_ready_in =>data_ready_in, 
                                Data_INPUT => aes_input, 

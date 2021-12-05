@@ -93,11 +93,11 @@ process begin
     Key_int <= x"754620676e754b20796d207374616854";
     Data_INPUT_int <= x"6f775420656e694e20656e4f206f7754";
     Data_ready_in_int <= '0';
-    RESET_int <= '1';
+    RESET_int <= '0';
     enableEncryption <= '1';
     
     wait for 5 ns;
-    RESET_int <= '0';
+    --RESET_int <= '0';
     
     wait for 5 ns;
     Data_ready_in_int <= '1';

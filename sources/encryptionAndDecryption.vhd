@@ -22,6 +22,7 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_unsigned.ALL;
+use ieee.std_logic_arith.all;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -36,8 +37,9 @@ entity encryptionAndDecryption is
     Port ( clk : in STD_LOGIC;
            reset : in STD_LOGIC;
            enable : in STD_LOGIC;
+           pVDE : in STD_LOGIC;
            data_in : in STD_LOGIC_VECTOR (23 downto 0);
-           data_out : out STD_LOGIC;
+           data_out : out STD_LOGIC_VECTOR (23 downto 0);
            data_ready_out : out STD_LOGIC);
 end encryptionAndDecryption;
 
@@ -93,6 +95,7 @@ signal decryptionFinished : STD_LOGIC;
 
 -- Signaux pour le shiftRegister qui nous renvoie nos pixels un à la fois
 signal input_res : STD_LOGIC := '1'; -- Valeur bidon
+signal shift_register_output : STD_LOGIC;
 
 begin
 
@@ -116,7 +119,7 @@ reg_decalage_red: registre_decalage port map (data_in => data_in(23),
                                               reset => reset);
 
 -- AES_CTR pour encrypter les 128 derniers pixels
-aes_ctr_encryption: aes_ctr port map(input =>data_out_decalage_red,
+aes_ctr_encryption: AES_CTR port map(input =>data_out_decalage_red,
                           clk=>clkout, 
                           data_ready_in =>data_ready_in_ctr_red, 
                           reset => reset,
@@ -126,7 +129,7 @@ aes_ctr_encryption: aes_ctr port map(input =>data_out_decalage_red,
                           output => encryption_data_out);
 
 -- AES_CTR pour décrypter les 128 derniers pixels
-aes_ctr_decryption: aes_ctr port map(input => encryption_data_out,
+aes_ctr_decryption: AES_CTR port map(input => encryption_data_out,
                           clk => clkout, 
                           data_ready_in => encryptionFinished, 
                           reset => reset,
@@ -142,9 +145,13 @@ registre : rdc_load_Nbits port map(RESET => reset,
                                    MODE => NOT(decryptionFinished), -- Si decryptionFinished == 1, alors on LOAD dans le registre, sinon, on sort 1 à 1 !
                                    INPUT => input_res,
                                    LOAD => decryption_data_out,
-                                   OUTPUT => data_out);
+                                   OUTPUT => shift_register_output);
+
+data_out <= "100000000000000000000000" when shift_register_output = '1' else
+            "000000000000000000000000" when shift_register_output = '0' else
+            "000000000000000000000000";
 
 -- Output qui nous servira de futur pVDE
-data_ready_out <= NOT(decryptionFinished);
+data_ready_out <= pVDE;
 
 end Behavioral;

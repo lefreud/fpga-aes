@@ -43,7 +43,7 @@ architecture Behavioral of BitRegister is
 
 begin
 
-Process(Reset, CLK)
+Process(Reset, CLK, EN, D)
 Begin
     If (Reset='1') then
         Q<='0';
