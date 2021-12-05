@@ -154,6 +154,16 @@ process(CLK, reset)
 begin
 if(reset = '1') then
     etat <= attente;
+    slave_reset <= '1';
+        --desactiver l'encryption
+            ctr_enable <= '0';
+        --desactiver le slave
+            slave_start <= '0';
+        --desactiver registre à décalage
+            enable_decalage <= '0';
+            reset_decalage <= '1';
+        --remettre à zéro le compteur de blocs stocké
+            reset_counter <= '1';
 elsif(clk = '1' and clk'event) then
     case etat is
         when attente =>
