@@ -37,13 +37,20 @@ entity tx_slave_fsm is
            start : in STD_LOGIC;
            bram_read_data: in STD_LOGIC_VECTOR (127 downto 0);
            reset : in STD_LOGIC;
-           adresse_read_bram: out STD_LOGIC_VECTOR (13 downto 0):="00000000000000";
+           adresse_read_bram: out STD_LOGIC_VECTOR (13 downto 0);
            termine: out STD_LOGIC;
            tx_uart:out STD_LOGIC);
            
 end tx_slave_fsm;
 
 architecture Behavioral of tx_slave_fsm is
+
+component compteur_stocker is
+    Port ( clk : in STD_LOGIC;
+           count : out STD_LOGIC_VECTOR (13 downto 0);
+           enable : in STD_LOGIC;
+           reset : in STD_LOGIC);
+end component;
 
 component Transmetteur_UART is
     Port ( clk : in STD_LOGIC;
@@ -58,7 +65,8 @@ end component;
 type type_etat is (attente, envoyer, fin);
 signal etat: type_etat;
 
-signal counter_envoie:STD_LOGIC_VECTOR (13 downto 0):= (others => '0');
+signal reset_counter:STD_LOGIC;
+signal data_compteur:STD_LOGIC_VECTOR (13 downto 0);
 
 signal start_uart:STD_LOGIC;
 signal reset_uart:STD_LOGIC;
@@ -74,13 +82,25 @@ uart: transmetteur_uart port map( clk => clk_uart,
                                   occupe => occupe_uart,
                                   datain => bram_read_data);
 
+compteur: compteur_stocker port map (clk => clk_uart,
+                                     count => data_compteur,
+                                     enable =>termine_uart,
+                                     reset =>reset_counter);
+                                     
+adresse_read_bram <= data_compteur;
+
 process(reset,clk_uart)
 begin 
 if(reset = '1') then
     etat <= attente;
+    termine <= '0';
+    reset_uart <= '1';
+    start_uart <= '0';
+    reset_counter <= '1';
 elsif(clk_uart = '1' and clk_uart'event) then
     case etat is
         when attente =>
+            reset_counter <= '1';
             termine <= '0';
         --desactiver uart
             reset_uart <= '1';
@@ -91,6 +111,7 @@ elsif(clk_uart = '1' and clk_uart'event) then
             end if;
             
         when envoyer =>
+            reset_counter <= '0';
             termine <= '0';
         --activer le uart
             start_uart <= '1';
@@ -108,15 +129,5 @@ elsif(clk_uart = '1' and clk_uart'event) then
             etat <= attente;
     end case;
 end if;
-end process;
-
-process(clk_uart)
-begin
-    if(clk_uart='1' and clk_uart'event) then
-        if(termine_uart = '1') then
-            counter_envoie <= counter_envoie + 1;
-            adresse_read_bram <= counter_envoie;
-        end if;
-    end if;
 end process;
 end Behavioral;
