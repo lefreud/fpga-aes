@@ -92,7 +92,6 @@ signal decryptionFinished : STD_LOGIC;
 -- Signaux pour le shiftRegister qui nous renvoie nos pixels un à la fois
 signal input_res : STD_LOGIC := '1'; -- Valeur bidon
 signal shift_register_output : STD_LOGIC;
-signal output_of_shift_register_is_valid : STD_LOGIC;
 signal output_of_shft_register_counter : unsigned (15 downto 0) := "1111110000000000";
 signal mode: STD_LOGIC;
 
@@ -156,11 +155,13 @@ data_out <= "100000000000000000000000" when shift_register_output = '1' else
 data_ready_out <= '1' when output_of_shft_register_counter < 128 else '0';
 
 process(clk) begin
+if(clk'event and clk = '1') THEN
     if(decryptionFinished = '0') then
         output_of_shft_register_counter <= output_of_shft_register_counter + 1;
     elsif (decryptionFinished = '1') then
         output_of_shft_register_counter <= (others=>'0');
     end if;
+end if;
 end process;
 
 end Behavioral;
