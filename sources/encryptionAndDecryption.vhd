@@ -92,7 +92,6 @@ signal decryptionFinished : STD_LOGIC;
 -- Signaux pour le shiftRegister qui nous renvoie nos pixels un à la fois
 signal input_res : STD_LOGIC := '1'; -- Valeur bidon
 signal shift_register_output : STD_LOGIC;
-signal output_of_shift_register_is_valid : STD_LOGIC;
 signal output_of_shft_register_counter : unsigned (15 downto 0) := "1111110000000000";
 signal mode: STD_LOGIC;
 
