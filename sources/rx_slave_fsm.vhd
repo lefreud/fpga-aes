@@ -24,7 +24,6 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_unsigned.ALL;
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
-use IEEE.NUMERIC_STD.ALL;
 
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx leaf cells in this code.
@@ -77,30 +76,31 @@ if(reset = '1') then
 elsif(clk_uart = '1' and clk_uart'event) then
     case etat is
         when attente =>
-        -- Le recepteur est etteint 
-        reset_uart <= '1';
-        
-        --aucun acces à la bram
-        write_enable_bram <= '0';
-        counter_envoie <= "00000000000000";
+            -- Le recepteur est etteint 
+            reset_uart <= '1';
+            
+            --aucun acces à la bram
+            write_enable_bram <= '0';
+            counter_envoie <= "00000000000000";
         
         when reception =>
-        --on active le uart 
-        reset_uart <= '0';
-        if (counter_envoie = (11250-1)) then
-            etat <= fin;
-            counter_envoie <="00000000000000";
-        elsif(data_rdy_uart = '1') then
-             write_enable_bram <= '1';
-             adresse_write_bram <= counter_envoie;
-             counter_envoie <= counter_envoie + 1;
-        end if;
+            --on active le uart 
+            reset_uart <= '0';
+            if (counter_envoie = 500) then
+                etat <= fin;
+                counter_envoie <="00000000000000";
+                data_rdy <= '1';
+            elsif(data_rdy_uart = '1') then
+                 write_enable_bram <= '1';
+                 adresse_write_bram <= counter_envoie;
+                 counter_envoie <= counter_envoie + 1;
+            end if;
         when fin =>
-        reset_uart <= '1';
-        --aucun acces à la bram
-        write_enable_bram <= '0';
-        -- etat de depart 
-        etat<= attente;
+            reset_uart <= '1';
+            --aucun acces à la bram
+            write_enable_bram <= '0';
+            -- etat de depart 
+            etat<= attente;
        when others =>
              etat <= attente;
      end case;

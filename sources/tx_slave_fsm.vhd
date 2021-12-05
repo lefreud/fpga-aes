@@ -117,7 +117,7 @@ elsif(clk_uart = '1' and clk_uart'event) then
             start_uart <= '1';
             reset_uart <= '0';
         --lorsqu'on a envoyé 11250 blocs de 128 bits, on a fini
-            if(counter_envoie = 11250) then
+            if(data_compteur = 11250) then
                 etat <= fin;
             end if;
         when fin =>

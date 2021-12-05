@@ -78,7 +78,7 @@ signal first_arrival :  std_logic;
 
 signal input_data: STD_LOGIC_VECTOR (127 downto 0);
 
-signal NBRE_COUP_HORLOGE: STD_LOGIC_VECTOR (15 downto 0):=      "0000010000111101";--;x"0010";
+signal NBRE_COUP_HORLOGE: STD_LOGIC_VECTOR (15 downto 0):=      "0000000110010110";--;x"0010";
 --signal HALF_NBRE_COUP_HORLOGE: STD_LOGIC_VECTOR (15 downto 0):= "0000001000011110";
 signal Nbre_bits: STD_LOGIC_VECTOR (15 downto 0):=             "0010101001100101";--x"0001";
 signal compte : integer:= 0;

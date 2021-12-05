@@ -77,8 +77,8 @@ signal cmp_2: std_logic;
 --signal data_rdy: STD_LOGIC;
 signal enable_rdc: STD_LOGIC;
 
-signal NBRE_COUP_HORLOGE: STD_LOGIC_VECTOR (15 downto 0):=      "0000010000111101";
-signal HALF_NBRE_COUP_HORLOGE: STD_LOGIC_VECTOR (15 downto 0):= "0000001000011110";
+signal NBRE_COUP_HORLOGE: STD_LOGIC_VECTOR (15 downto 0):=      "0000000110010110";
+signal HALF_NBRE_COUP_HORLOGE: STD_LOGIC_VECTOR (15 downto 0):= "0000000011001011";
 signal Nbre_bits: STD_LOGIC_VECTOR (15 downto 0):=              "0010010000000110";
 
 begin
@@ -110,6 +110,7 @@ begin
             when waiting =>
                 data_rdy <= '0';
                 enable_rdc <= '0';
+                compte <= 0;
                 if(rx = '1') then
                     etat_present <= waiting;
                     --bitvalide <= '1';
@@ -138,7 +139,7 @@ begin
                 enable_rdc <= '0';
                 reset_comp_0 <= '0';
                 --reset_comp_1 <= '0';
-                if(compte = 8) then
+                if(compte = 128) then
                     etat_present <= end_bit;
                     data_rdy <= '1';
                     compte <= 0;   
@@ -179,7 +180,7 @@ begin
                 if(rx = '0') then 
                     etat_present <= end_bit;
                 elsif(rx = '1') then
-                etat_present <= end_all;
+                    etat_present <= end_all;
                 end if; 
                 
             when end_all =>

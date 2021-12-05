@@ -41,5 +41,7 @@ end multiplexer;
 architecture Behavioral of multiplexer is
 
 begin
-    OUTPUT <= LOAD when (MODE = '0') else INPUT;
+    OUTPUT <= LOAD when (MODE = '0') else
+              INPUT when (MODE = '1') else
+              LOAD;
 end Behavioral;
