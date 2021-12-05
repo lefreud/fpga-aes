@@ -66,7 +66,7 @@ component AES_CTR is
 end component;
 
 component rdc_load_Nbits is
-    generic (N : integer := 128);
+    generic (N : integer);
     Port ( RESET : in STD_LOGIC;
            CLK : in STD_LOGIC;
            ENABLE : in STD_LOGIC;
@@ -78,10 +78,6 @@ end component;
 
 -- La clé
 signal key: STD_LOGIC_VECTOR (127 downto 0):= x"55555555555555555555555555555555";
-
--- Signaux pour ralentir l'horloge
-signal clk_int : std_logic_vector(7 downto 0) := (others=>'0');
-signal clkout  : STD_LOGIC;
 
 -- Signaux pour l'encryption
 signal data_out_decalage_red: STD_LOGIC_VECTOR (127 downto 0); -- Contient les 128 derniers pixels
@@ -96,31 +92,34 @@ signal decryptionFinished : STD_LOGIC;
 -- Signaux pour le shiftRegister qui nous renvoie nos pixels un à la fois
 signal input_res : STD_LOGIC := '1'; -- Valeur bidon
 signal shift_register_output : STD_LOGIC;
+signal output_of_shift_register_is_valid : STD_LOGIC;
+signal output_of_shft_register_counter : unsigned (15 downto 0) := "1111110000000000";
+
 
 begin
 
 -- On diminue la clock pour qu'elle soit à 1 pendant 128 coups de pixelCLK et à 0 ensuite pour 128 coups et ainsi de suite
-Process(Reset, clk)
-begin
-    if(reset='1') then
-        clk_int <= (others=>'0');
-    Elsif (clk'event and clk='1') then
-        clk_int <= clk_int + '1';
-    end if;
-end process;
-clkout <= clk_int(7);
+--Process(Reset, clk)
+--begin
+--    if(reset='1') then
+--        clk_int <= (others=>'0');
+--    Elsif (clk'event and clk='1') then
+--        clk_int <= clk_int + '1';
+--    end if;
+--end process;
+--clkout <= clk_int(6);
 
 -- Registre à décalage contenant les 128 derniers pixels
 reg_decalage_red: registre_decalage port map (data_in => data_in(23),
                                               data_out => data_out_decalage_red,
                                               data_ready_out =>data_ready_in_ctr_red,
                                               CLK => CLK, 
-                                              enable => enable,
+                                              enable => pVDE,
                                               reset => reset);
 
 -- AES_CTR pour encrypter les 128 derniers pixels
 aes_ctr_encryption: AES_CTR port map(input =>data_out_decalage_red,
-                          clk=>clkout, 
+                          clk=>clk, 
                           data_ready_in =>data_ready_in_ctr_red, 
                           reset => reset,
                           enable => enable,
@@ -130,7 +129,7 @@ aes_ctr_encryption: AES_CTR port map(input =>data_out_decalage_red,
 
 -- AES_CTR pour décrypter les 128 derniers pixels
 aes_ctr_decryption: AES_CTR port map(input => encryption_data_out,
-                          clk => clkout, 
+                          clk => clk, 
                           data_ready_in => encryptionFinished, 
                           reset => reset,
                           enable => enable,
@@ -139,7 +138,8 @@ aes_ctr_decryption: AES_CTR port map(input => encryption_data_out,
                           output => decryption_data_out);
                           
 -- Registre prenant les 128 bits et qui nous les sort par la suite un à la fois
-registre : rdc_load_Nbits port map(RESET => reset,
+registre : rdc_load_Nbits generic map (N => 128)
+                          port map(RESET => reset,
                                    CLK => clk,
                                    ENABLE => enable,
                                    MODE => NOT(decryptionFinished), -- Si decryptionFinished == 1, alors on LOAD dans le registre, sinon, on sort 1 à 1 !
@@ -152,6 +152,14 @@ data_out <= "100000000000000000000000" when shift_register_output = '1' else
             "000000000000000000000000";
 
 -- Output qui nous servira de futur pVDE
-data_ready_out <= pVDE;
+data_ready_out <= '1' when output_of_shft_register_counter < 128 else '0';
+
+process(clk) begin
+    if(decryptionFinished = '0') then
+        output_of_shft_register_counter <= output_of_shft_register_counter + 1;
+    elsif (decryptionFinished = '1') then
+        output_of_shft_register_counter <= (others=>'0');
+    end if;
+end process;
 
 end Behavioral;
