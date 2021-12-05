@@ -90,6 +90,7 @@ signal ninethRegister: STD_LOGIC_VECTOR (127 downto 0);
 
 signal tenthRoundKey: STD_LOGIC_VECTOR (127 downto 0);
 signal tenthRoundOutput: STD_LOGIC_VECTOR (127 downto 0);
+signal tenthRegister: STD_LOGIC_VECTOR (127 downto 0);
 
 signal firstDataReceived : STD_LOGIC;
 signal secondDataReceived : STD_LOGIC;
@@ -151,13 +152,14 @@ Eigth_Data_Received : BitRegister port map (RESET => RESET, CLK => CLK, D => sev
 Nineth_Round_Key : AES_key_schedule port map (input => eigthRoundKey, output => ninethRoundKey, round => 9);
 Nineth_Round : AES_ROUND port map (inputText => eigthRegister, roundKey => ninethRoundKey, outputText => ninethRoundOutput);
 Nineth_Register : Register128Bits port map (RESET => RESET, CLK => CLK, Data_IN => ninethRoundOutput, EN => enable, Data_OUT => ninethRegister);
-Nineth_Data_Received : BitRegister port map (RESET => RESET, CLK => CLK, D => eigthDataReceived, EN => enable, Q => ninethDataReceived);
+Nineth_Data_Received : BitRegister port map (RESET => RESET, CLK => CLK, D => eigthDataReceived, EN => enable, Q => Data_ready_out);
 
 -- The last round doesn't have a MixColumns
 Tenth_Round_Key : AES_key_schedule port map (input => ninethRoundKey, output => tenthRoundKey, round => 10);
 LastSubBytes: SubBytes_128Bits port map(data_in=>ninethRegister, data_out=>shiftRows_input);
 LastShiftRows: ShiftRows port map(data_in=>shiftRows_input, data_out=>lastRoundKey_input);
+Tenth_Register : Register128Bits port map (RESET => RESET, CLK => CLK, Data_IN => lastRoundKey_input, EN => enable, Data_OUT => tenthRegister);
 Tenth_Data_Received : BitRegister port map (RESET => RESET, CLK => CLK, D => ninethDataReceived, EN => enable, Q => Data_ready_out);
-Data_OUTPUT <= (lastRoundKey_input xor tenthRoundKey);
+Data_OUTPUT <= (tenthRegister xor tenthRoundKey);
 
 end Behavioral;
