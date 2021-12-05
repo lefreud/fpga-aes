@@ -74,11 +74,13 @@ aes_block0: AES_BLOCK port map (Data_ready_in =>data_ready_in,
                                CLK=>CLK, 
                                RESET=>RESET);
 
-process(data_ready_in)
+process(clk)
 begin
-    if(data_ready_in'event and data_ready_in = '1') then
+if(clk = '1' and clk'event) then
+    if(data_ready_in = '1') then
         counter <= counter + 1;
     end if;
+end if;
 end process;
 
 output <= input xor aes_output;
