@@ -94,7 +94,7 @@ signal input_res : STD_LOGIC := '1'; -- Valeur bidon
 signal shift_register_output : STD_LOGIC;
 signal output_of_shift_register_is_valid : STD_LOGIC;
 signal output_of_shft_register_counter : unsigned (15 downto 0) := "1111110000000000";
-
+signal mode: STD_LOGIC;
 
 begin
 
@@ -142,11 +142,12 @@ registre : rdc_load_Nbits generic map (N => 128)
                           port map(RESET => reset,
                                    CLK => clk,
                                    ENABLE => enable,
-                                   MODE => NOT(decryptionFinished), -- Si decryptionFinished == 1, alors on LOAD dans le registre, sinon, on sort 1 à 1 !
+                                   MODE => mode , -- Si decryptionFinished == 1, alors on LOAD dans le registre, sinon, on sort 1 à 1 !
                                    INPUT => input_res,
                                    LOAD => decryption_data_out,
                                    OUTPUT => shift_register_output);
 
+mode <= NOT decryptionFinished;
 data_out <= "100000000000000000000000" when shift_register_output = '1' else
             "000000000000000000000000" when shift_register_output = '0' else
             "000000000000000000000000";
