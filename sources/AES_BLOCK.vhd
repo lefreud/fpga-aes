@@ -152,7 +152,7 @@ Eigth_Data_Received : BitRegister port map (RESET => RESET, CLK => CLK, D => sev
 Nineth_Round_Key : AES_key_schedule port map (input => eigthRoundKey, output => ninethRoundKey, round => 9);
 Nineth_Round : AES_ROUND port map (inputText => eigthRegister, roundKey => ninethRoundKey, outputText => ninethRoundOutput);
 Nineth_Register : Register128Bits port map (RESET => RESET, CLK => CLK, Data_IN => ninethRoundOutput, EN => enable, Data_OUT => ninethRegister);
-Nineth_Data_Received : BitRegister port map (RESET => RESET, CLK => CLK, D => eigthDataReceived, EN => enable, Q => Data_ready_out);
+Nineth_Data_Received : BitRegister port map (RESET => RESET, CLK => CLK, D => eigthDataReceived, EN => enable, Q => ninethDataReceived);
 
 -- The last round doesn't have a MixColumns
 Tenth_Round_Key : AES_key_schedule port map (input => ninethRoundKey, output => tenthRoundKey, round => 10);
