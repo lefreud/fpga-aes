@@ -66,18 +66,18 @@ begin
 
 rdc_load: 
    for I in 0 to N-1 generate
-      MULTIPLEXER0: if I=0 generate
+      MULTIPLEXER0: if I=N-1 generate
          FIRST_MULTIPLEXER : multiplexer port map
               (MODE => MODE,
                LOAD => LOAD(I),
                INPUT => INPUT,
                OUTPUT => sortieMultiplexers(I));
        end generate MULTIPLEXER0;
-      MULTIPLEXERX: if I>0 generate
+      MULTIPLEXERX: if I<N-1 generate
         OTHER_MULTIPLEXER : multiplexer port map
              (MODE => MODE,
               LOAD => LOAD(I),
-              INPUT => sortieRegistres(I-1),
+              INPUT => sortieRegistres(I+1),
               OUTPUT => sortieMultiplexers(I));
       end generate MULTIPLEXERX;
       REGX : OneBitRegister port map
@@ -87,5 +87,5 @@ rdc_load:
          D => sortieMultiplexers(I),
          Q => sortieRegistres(I));
    end generate rdc_load;
-OUTPUT <= sortieRegistres(N-1);
+OUTPUT <= sortieRegistres(0);
 end Behavioral;

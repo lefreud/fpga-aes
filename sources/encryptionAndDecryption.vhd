@@ -76,7 +76,6 @@ component rdc_load_Nbits is
            OUTPUT : out STD_LOGIC);
 end component;
 
-
 -- La clé
 signal key: STD_LOGIC_VECTOR (127 downto 0):= x"55555555555555555555555555555555";
 
@@ -91,23 +90,23 @@ signal decryption_data_out : STD_LOGIC_VECTOR (127 downto 0);
 signal decryptionFinished : STD_LOGIC;
 
 -- Signaux pour le shiftRegister qui nous renvoie nos pixels un à la fois
-signal input_res : STD_LOGIC := '1'; -- Valeur bidon
+signal input_res : STD_LOGIC := '0'; -- Valeur bidon
 signal shift_register_output : STD_LOGIC;
-signal output_of_shft_register_counter : unsigned (15 downto 0) := "1111110000000000";
-signal mode: STD_LOGIC;
+
+-- Signaux pour le registre à décalage de pVDE et l'encryption de pVDE
+signal data_out_decalage_pVDE: STD_LOGIC_VECTOR (127 downto 0); -- Contient les 128 derniers pVDE
+signal data_ready_in_ctr_pVDE: STD_LOGIC; -- Pour signaler que l'encryption de pVDE peut commencer
+signal encryption_pVDE_data_out : STD_LOGIC_VECTOR (127 downto 0); -- 128 pixels cryptés
+signal encryptionFinished_pVDE : STD_LOGIC; -- Pour signaler que la décryption peut commencer
+
+-- Signaux pour la décryption de pVDE
+signal decryption_pVDE_data_out : STD_LOGIC_VECTOR (127 downto 0);
+signal decryptionFinished_pVDE : STD_LOGIC;
+
+-- Signaux pour le shiftRegister qui nous renvoie nos pixels un à la fois
+signal shift_register_pVDE_output : STD_LOGIC;
 
 begin
-
--- On diminue la clock pour qu'elle soit à 1 pendant 128 coups de pixelCLK et à 0 ensuite pour 128 coups et ainsi de suite
---Process(Reset, clk)
---begin
---    if(reset='1') then
---        clk_int <= (others=>'0');
---    Elsif (clk'event and clk='1') then
---        clk_int <= clk_int + '1';
---    end if;
---end process;
---clkout <= clk_int(6);
 
 -- Registre à décalage contenant les 128 derniers pixels
 reg_decalage_red: registre_decalage port map (data_in => data_in(23),
@@ -142,27 +141,16 @@ registre : rdc_load_Nbits generic map (N => 128)
                           port map(RESET => reset,
                                    CLK => clk,
                                    ENABLE => enable,
-                                   MODE => mode , -- Si decryptionFinished == 1, alors on LOAD dans le registre, sinon, on sort 1 à 1 !
+                                   MODE => NOT(decryptionFinished) , -- Si decryptionFinished == 1, alors on LOAD dans le registre, sinon, on sort 1 à 1 !
                                    INPUT => input_res,
                                    LOAD => decryption_data_out,
                                    OUTPUT => shift_register_output);
 
-mode <= NOT decryptionFinished;
 data_out <= "100000000000000000000000" when shift_register_output = '1' else
             "000000000000000000000000" when shift_register_output = '0' else
-            "000000000000000000000000";
+            "111111111111111111111111";
 
 -- Output qui nous servira de futur pVDE
-data_ready_out <= '1' when output_of_shft_register_counter < 128 else '0';
-
-process(clk) begin
-if(clk'event and clk = '1') THEN
-    if(decryptionFinished = '0') then
-        output_of_shft_register_counter <= output_of_shft_register_counter + 1;
-    elsif (decryptionFinished = '1') then
-        output_of_shft_register_counter <= (others=>'0');
-    end if;
-end if;
-end process;
+data_ready_out <= pVDE;
 
 end Behavioral;
