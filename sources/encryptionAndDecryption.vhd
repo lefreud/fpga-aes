@@ -76,6 +76,7 @@ component rdc_load_Nbits is
            OUTPUT : out STD_LOGIC);
 end component;
 
+
 -- La clé
 signal key: STD_LOGIC_VECTOR (127 downto 0):= x"55555555555555555555555555555555";
 
@@ -113,7 +114,7 @@ reg_decalage_red: registre_decalage port map (data_in => data_in(23),
                                               data_out => data_out_decalage_red,
                                               data_ready_out =>data_ready_in_ctr_red,
                                               CLK => CLK, 
-                                              enable => pVDE,
+                                              enable => enable,
                                               reset => reset);
 
 -- AES_CTR pour encrypter les 128 derniers pixels

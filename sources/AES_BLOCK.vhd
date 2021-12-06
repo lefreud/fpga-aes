@@ -158,8 +158,7 @@ Nineth_Data_Received : BitRegister port map (RESET => RESET, CLK => CLK, D => ei
 Tenth_Round_Key : AES_key_schedule port map (input => ninethRoundKey, output => tenthRoundKey, round => 10);
 LastSubBytes: SubBytes_128Bits port map(data_in=>ninethRegister, data_out=>shiftRows_input);
 LastShiftRows: ShiftRows port map(data_in=>shiftRows_input, data_out=>lastRoundKey_input);
-Tenth_Register : Register128Bits port map (RESET => RESET, CLK => CLK, Data_IN => lastRoundKey_input, EN => enable, Data_OUT => tenthRegister);
 Tenth_Data_Received : BitRegister port map (RESET => RESET, CLK => CLK, D => ninethDataReceived, EN => enable, Q => Data_ready_out);
-Data_OUTPUT <= (tenthRegister xor tenthRoundKey);
+Data_OUTPUT <= (lastRoundKey_input xor tenthRoundKey);
 
 end Behavioral;

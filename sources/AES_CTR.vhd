@@ -45,6 +45,14 @@ end AES_CTR;
 
 architecture Behavioral of AES_CTR is
 
+component Register128Bits is
+    Port ( RESET : in STD_LOGIC;
+           CLK : in STD_LOGIC;
+           Data_IN : in STD_LOGIC_VECTOR (127 downto 0);
+           EN : in STD_LOGIC;
+           Data_OUT : out STD_LOGIC_VECTOR (127 downto 0));
+end component;
+
 component AES_BLOCK is
     Port ( Data_INPUT : in STD_LOGIC_VECTOR (127 downto 0);
            Key : in STD_LOGIC_VECTOR (127 downto 0);
@@ -61,10 +69,17 @@ signal nonce : STD_LOGIC_VECTOR (63 downto 0):= x"0123456789012345";
 signal counter : STD_LOGIC_VECTOR (63 downto 0):= x"0000000000000000";
 signal aes_input: STD_LOGIC_VECTOR (127 downto 0);
 
+signal data_reg: STD_LOGIC_VECTOR (127 downto 0);
 begin
 
 aes_input <= nonce & counter;
 
+reg:Register128Bits port map(RESET => reset,
+                             CLK  => clk,
+                             Data_IN  => input,
+                             EN  => data_ready_in,
+                             Data_OUT  => data_reg);
+                             
 aes_block0: AES_BLOCK port map (Data_ready_in =>data_ready_in, 
                                Data_INPUT => aes_input, 
                                Key =>key, 
@@ -83,5 +98,5 @@ if(clk = '1' and clk'event) then
 end if;
 end process;
 
-output <= input xor aes_output;
+output <= data_reg xor aes_output;
 end Behavioral;

@@ -32,7 +32,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 --use UNISIM.VComponents.all;
 
 entity rdc_load_Nbits is
-    generic (N : integer := 10);
+    generic (N : integer := 128);
     Port ( RESET : in STD_LOGIC;
            CLK : in STD_LOGIC;
            ENABLE : in STD_LOGIC;
